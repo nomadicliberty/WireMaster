@@ -43,7 +43,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new wire type
   app.post("/api/wire-types", async (req: Request, res: Response) => {
     try {
-      const validatedData = insertWireTypeSchema.parse(req.body);
+      // Convert ratio to string if it's a number before validation
+      const requestData = { ...req.body };
+      if (typeof requestData.ratio === 'number') {
+        requestData.ratio = String(requestData.ratio);
+      }
+      
+      const validatedData = insertWireTypeSchema.parse(requestData);
       const wireType = await storage.createWireType(validatedData);
       return res.status(201).json(wireType);
     } catch (error) {
@@ -69,8 +75,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
+      
+      // Convert ratio to string if it's a number before validation
+      const requestData = { ...req.body };
+      if (typeof requestData.ratio === 'number') {
+        requestData.ratio = String(requestData.ratio);
+      }
 
-      const validatedData = insertWireTypeSchema.parse(req.body);
+      const validatedData = insertWireTypeSchema.parse(requestData);
       const updatedWireType = { ...wireType, ...validatedData };
       await storage.updateWireType(id, updatedWireType);
       
