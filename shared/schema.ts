@@ -22,6 +22,7 @@ export type WireType = typeof wireTypes.$inferSelect;
 export const calculateSchema = z.object({
   wireTypeId: z.number(),
   weight: z.number().positive(),
+  weightUnit: z.enum(["lbs", "oz"]).default("lbs"),
 });
 
 export type CalculateInput = z.infer<typeof calculateSchema>;
