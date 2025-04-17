@@ -1,10 +1,24 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
+import { v4 as uuidv4 } from "uuid";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+// Add user ID middleware
+app.use((req, res, next) => {
+  if (!req.cookies.userId) {
+    res.cookie('userId', uuidv4(), { 
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+      httpOnly: true
+    });
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

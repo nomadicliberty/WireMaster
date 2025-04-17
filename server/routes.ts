@@ -12,7 +12,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all wire types
   app.get("/api/wire-types", async (req: Request, res: Response) => {
     try {
-      const wireTypes = await storage.getWireTypes();
+      const userId = req.cookies.userId;
+      const wireTypes = await storage.getWireTypes(userId);
       return res.status(200).json(wireTypes);
     } catch (error) {
       console.error("Error fetching wire types:", error);
@@ -27,8 +28,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-
-      const wireType = await storage.getWireType(id);
+      const userId = req.cookies.userId;
+      const wireType = await storage.getWireType(userId, id);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
@@ -48,9 +49,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (typeof requestData.ratio === 'number') {
         requestData.ratio = String(requestData.ratio);
       }
-      
+
       const validatedData = insertWireTypeSchema.parse(requestData);
-      const wireType = await storage.createWireType(validatedData);
+      const userId = req.cookies.userId;
+      const wireType = await storage.createWireType(userId, validatedData);
       return res.status(201).json(wireType);
     } catch (error) {
       console.error("Error creating wire type:", error);
@@ -70,12 +72,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-
-      const wireType = await storage.getWireType(id);
+      const userId = req.cookies.userId;
+      const wireType = await storage.getWireType(userId, id);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
-      
+
       // Convert ratio to string if it's a number before validation
       const requestData = { ...req.body };
       if (typeof requestData.ratio === 'number') {
@@ -84,8 +86,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = insertWireTypeSchema.parse(requestData);
       const updatedWireType = { ...wireType, ...validatedData };
-      await storage.updateWireType(id, updatedWireType);
-      
+      await storage.updateWireType(userId, id, updatedWireType);
+
       return res.status(200).json(updatedWireType);
     } catch (error) {
       console.error("Error updating wire type:", error);
@@ -103,8 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-
-      const success = await storage.deleteWireType(id);
+      const userId = req.cookies.userId;
+      const success = await storage.deleteWireType(userId, id);
       if (!success) {
         return res.status(404).json({ message: "Wire type not found or cannot be deleted (default wire type)" });
       }
@@ -120,18 +122,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/calculate", async (req: Request, res: Response) => {
     try {
       const { wireTypeId, weight, weightUnit } = calculateSchema.parse(req.body);
-      
-      const wireType = await storage.getWireType(wireTypeId);
+      const userId = req.cookies.userId;
+      const wireType = await storage.getWireType(userId, wireTypeId);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
 
       // Convert weight to pounds if in ounces (1 pound = 16 ounces)
       const weightInPounds = weightUnit === "oz" ? weight / 16 : weight;
-      
+
       // Calculate length: (weight × 100) ÷ (weight per 100ft)
       const length = (weightInPounds * 100) / Number(wireType.ratio);
-      
+
       return res.status(200).json({
         wireType,
         weight,
