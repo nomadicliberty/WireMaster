@@ -37,14 +37,12 @@ export class MemStorage implements IStorage {
     return wireType;
   }
 
+  async updateWireType(id: number, wireType: WireType): Promise<WireType> {
+    this.wireTypes.set(id, wireType);
+    return wireType;
+  }
+
   async deleteWireType(id: number): Promise<boolean> {
-    const wireType = this.wireTypes.get(id);
-    
-    // Don't allow deletion of default wire types
-    if (wireType && wireType.isDefault === 1) {
-      return false;
-    }
-    
     return this.wireTypes.delete(id);
   }
 
