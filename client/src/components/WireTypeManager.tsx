@@ -1,0 +1,243 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Trash2, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useWireTypes } from "@/hooks/useWireTypes";
+
+const formSchema = z.object({
+  name: z.string().min(1, "Wire name is required"),
+  ratio: z.coerce.number().positive("Ratio must be greater than 0"),
+  isDefault: z.number().default(0),
+});
+
+export function WireTypeManager() {
+  const { toast } = useToast();
+  const { wireTypes, isLoading } = useWireTypes();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      ratio: undefined,
+      isDefault: 0,
+    },
+  });
+
+  const addWireMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const response = await apiRequest("POST", "/api/wire-types", values);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "New wire type added successfully",
+      });
+      setIsAddDialogOpen(false);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/wire-types"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to add wire type",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteWireMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/wire-types/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Wire type deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/wire-types"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to delete wire type",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    addWireMutation.mutate(values);
+  };
+
+  const handleDeleteWire = (id: number) => {
+    deleteWireMutation.mutate(id);
+  };
+
+  // Filter custom wire types (non-default)
+  const customWireTypes = wireTypes.filter(wireType => wireType.isDefault === 0);
+
+  return (
+    <>
+      <Card className="shadow-md overflow-hidden mb-6">
+        <div className="bg-secondary px-4 py-3">
+          <h2 className="text-lg font-semibold text-white">Manage Wire Types</h2>
+        </div>
+        <CardContent className="p-4 sm:p-6">
+          <p className="text-gray-600 mb-6">Add custom wire types to your library or manage existing ones.</p>
+
+          <Button 
+            className="w-full mb-6"
+            onClick={() => setIsAddDialogOpen(true)}
+            variant="default"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add New Wire Type
+          </Button>
+
+          <div className="border rounded-md overflow-hidden">
+            <div className="bg-gray-50 px-4 py-2 border-b">
+              <h3 className="text-sm font-medium text-gray-700">Your Custom Wire Types</h3>
+            </div>
+
+            <div className="divide-y divide-gray-200 max-h-64 overflow-y-auto">
+              {customWireTypes.length > 0 ? (
+                customWireTypes.map((wireType) => (
+                  <div key={wireType.id} className="px-4 py-3 flex justify-between items-center">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">{wireType.name}</h4>
+                      <p className="text-xs text-gray-500">{wireType.ratio} lbs per 100ft</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteWire(wireType.id)}
+                      disabled={deleteWireMutation.isPending}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-4 text-center text-sm text-gray-500">
+                  No custom wire types added yet.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 text-xs text-gray-500">
+            <p>Your custom wire types are saved in the database.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Reference Card */}
+      <Card className="shadow-md overflow-hidden">
+        <div className="bg-gray-100 px-4 py-3 border-b">
+          <h2 className="text-sm font-medium text-gray-700">Quick Reference</h2>
+        </div>
+        <CardContent className="p-4">
+          <div className="text-xs text-gray-600 space-y-2">
+            <p><span className="font-medium">How to use:</span> Select a wire type, enter the weight, and calculate the remaining length.</p>
+            <p><span className="font-medium">Add custom wire:</span> Click "Add New Wire Type" and enter the wire name and its weight per 100 feet.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Add Wire Type Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Wire Type</DialogTitle>
+            <DialogDescription>
+              Enter the details of the wire type you want to add to your custom library.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Wire Name/Description</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 2/0 THHN Stranded" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="ratio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight per 100 feet (lbs)</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input 
+                          type="number" 
+                          step="0.01" 
+                          min="0.01" 
+                          placeholder="e.g., 13.5" 
+                          {...field} 
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          <span className="text-gray-500 text-sm">lbs/100ft</span>
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Enter the weight of 100 feet of this wire type in pounds.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  type="button" 
+                  onClick={() => setIsAddDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={addWireMutation.isPending}
+                >
+                  Add Wire Type
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
