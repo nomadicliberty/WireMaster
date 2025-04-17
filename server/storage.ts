@@ -3,71 +3,60 @@ import {
   type WireType, 
   type InsertWireType
 } from "@shared/schema";
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 
 // Interface for storage operations
 export interface IStorage {
-  getWireTypes(): Promise<WireType[]>;
-  getWireType(id: number): Promise<WireType | undefined>;
-  createWireType(wireType: InsertWireType): Promise<WireType>;
-  updateWireType(id: number, wireType: WireType): Promise<WireType>;
-  deleteWireType(id: number): Promise<boolean>;
-  seedDefaultWireTypes(): Promise<void>;
+  getWireTypes(userId: string): Promise<WireType[]>;
+  getWireType(userId: string, id: number): Promise<WireType | undefined>;
+  createWireType(userId: string, wireType: InsertWireType): Promise<WireType>;
+  updateWireType(userId: string, id: number, wireType: WireType): Promise<WireType>;
+  deleteWireType(userId: string, id: number): Promise<boolean>;
+  seedDefaultWireTypes(userId: string): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private wireTypes: Map<string, Map<number, WireType>>;
-  private currentIds: Map<string, number>;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
 
-  constructor() {
-    this.wireTypes = new Map();
-    this.currentIds = new Map();
-  }
+const db = drizzle(pool);
 
-  private getUserStore(userId: string) {
-    if (!this.wireTypes.has(userId)) {
-      this.wireTypes.set(userId, new Map());
-      this.currentIds.set(userId, 1);
-    }
-    return this.wireTypes.get(userId)!;
-  }
-
-  private getUserCurrentId(userId: string): number {
-    return this.currentIds.get(userId) || 1;
-  }
-
-  private incrementUserCurrentId(userId: string): number {
-    const nextId = this.getUserCurrentId(userId) + 1;
-    this.currentIds.set(userId, nextId);
-    return nextId;
-  }
-
+export class PostgresStorage implements IStorage {
   async getWireTypes(userId: string): Promise<WireType[]> {
-    return Array.from(this.getUserStore(userId).values());
+    return await db.select().from(wireTypes).where(eq(wireTypes.userId, userId));
   }
 
   async getWireType(userId: string, id: number): Promise<WireType | undefined> {
-    return this.getUserStore(userId).get(id);
+    const results = await db.select().from(wireTypes)
+      .where(and(eq(wireTypes.id, id), eq(wireTypes.userId, userId)));
+    return results[0];
   }
 
-  async createWireType(userId: string, insertWireType: InsertWireType): Promise<WireType> {
-    const id = this.incrementUserCurrentId(userId);
-    const wireType: WireType = { ...insertWireType, id };
-    this.getUserStore(userId).set(id, wireType);
-    return wireType;
+  async createWireType(userId: string, wireType: InsertWireType): Promise<WireType> {
+    const [result] = await db.insert(wireTypes)
+      .values({ ...wireType, userId })
+      .returning();
+    return result;
   }
 
   async updateWireType(userId: string, id: number, wireType: WireType): Promise<WireType> {
-    this.getUserStore(userId).set(id, wireType);
-    return wireType;
+    const [result] = await db.update(wireTypes)
+      .set(wireType)
+      .where(and(eq(wireTypes.id, id), eq(wireTypes.userId, userId)))
+      .returning();
+    return result;
   }
 
   async deleteWireType(userId: string, id: number): Promise<boolean> {
-    return this.getUserStore(userId).delete(id);
+    const result = await db.delete(wireTypes)
+      .where(and(eq(wireTypes.id, id), eq(wireTypes.userId, userId)));
+    return result.length > 0;
   }
 
   async seedDefaultWireTypes(userId: string): Promise<void> {
-    const store = this.getUserStore(userId);
-    if (store.size === 0) {
+    const existing = await this.getWireTypes(userId);
+    if (existing.length === 0) {
       const defaultWireTypes: InsertWireType[] = [
         { name: "10/2 NM-B (Romex)", ratio: "13.0", isDefault: 1 },
         { name: "12/2 NM-B (Romex)", ratio: "8.46", isDefault: 1 },
@@ -86,28 +75,6 @@ export class MemStorage implements IStorage {
       }
     }
   }
-
-  async seedDefaultWireTypes(): Promise<void> {
-    // Only seed if there are no wire types yet
-    if (this.wireTypes.size === 0) {
-      const defaultWireTypes: InsertWireType[] = [
-        { name: "10/2 NM-B (Romex)", ratio: 13.0, isDefault: 1 },
-        { name: "12/2 NM-B (Romex)", ratio: 8.46, isDefault: 1 },
-        { name: "12/3 NM-B (Romex)", ratio: 11.2, isDefault: 1 },
-        { name: "14/2 NM-B (Romex)", ratio: 5.84, isDefault: 1 },
-        { name: "14/3 NM-B (Romex)", ratio: 7.7, isDefault: 1 },
-        { name: "12/2 MC", ratio: 10.76, isDefault: 1 }, // 26.9/250*100 = 10.76 lbs/100ft
-        { name: "10/2 UF-B", ratio: 14.0, isDefault: 1 },
-        { name: "12/2 UF-B", ratio: 9.5, isDefault: 1 },
-        { name: "14/2 UF-B", ratio: 7.275, isDefault: 1 },
-        { name: "6/3 SER", ratio: 18.0, isDefault: 1 }
-      ];
-
-      for (const wireType of defaultWireTypes) {
-        await this.createWireType(wireType);
-      }
-    }
-  }
 }
 
-export const storage = new MemStorage();
+export const storage = new PostgresStorage();
