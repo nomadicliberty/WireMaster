@@ -57,6 +57,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete a wire type
+  // Update a wire type
+  app.put("/api/wire-types/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid wire type ID" });
+      }
+
+      const wireType = await storage.getWireType(id);
+      if (!wireType) {
+        return res.status(404).json({ message: "Wire type not found" });
+      }
+
+      const validatedData = insertWireTypeSchema.parse(req.body);
+      const updatedWireType = { ...wireType, ...validatedData };
+      await storage.updateWireType(id, updatedWireType);
+      
+      return res.status(200).json(updatedWireType);
+    } catch (error) {
+      console.error("Error updating wire type:", error);
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      return res.status(500).json({ message: "Failed to update wire type" });
+    }
+  });
+
   app.delete("/api/wire-types/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);

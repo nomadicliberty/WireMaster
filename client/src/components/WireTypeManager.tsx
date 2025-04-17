@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useWireTypes } from "@/hooks/useWireTypes";
+import { WireType } from "@shared/schema";
 
 const formSchema = z.object({
+  id: z.number().optional(),
   name: z.string().min(1, "Wire name is required"),
   ratio: z.coerce.number().positive("Ratio must be greater than 0"),
   isDefault: z.number().default(0),
@@ -32,6 +34,30 @@ export function WireTypeManager() {
   const { toast } = useToast();
   const { wireTypes, isLoading } = useWireTypes();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingWireType, setEditingWireType] = useState<WireType | null>(null);
+
+  const editWireMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const response = await apiRequest("PUT", `/api/wire-types/${values.id}`, values);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Wire type updated successfully",
+      });
+      setIsAddDialogOpen(false);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/wire-types"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to update wire type",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    },
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -120,22 +146,41 @@ export function WireTypeManager() {
             </div>
 
             <div className="divide-y divide-gray-200 max-h-64 overflow-y-auto">
-              {customWireTypes.length > 0 ? (
-                customWireTypes.map((wireType) => (
+              {wireTypes.length > 0 ? (
+                wireTypes.map((wireType) => (
                   <div key={wireType.id} className="px-4 py-3 flex justify-between items-center">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900">{wireType.name}</h4>
                       <p className="text-xs text-gray-500">{wireType.ratio} lbs per 100ft</p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteWire(wireType.id)}
-                      disabled={deleteWireMutation.isPending}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEditingWireType(wireType);
+                          form.reset({
+                            id: wireType.id,
+                            name: wireType.name,
+                            ratio: Number(wireType.ratio),
+                            isDefault: wireType.isDefault,
+                          });
+                          setIsAddDialogOpen(true);
+                        }}
+                        className="text-gray-400 hover:text-blue-500 transition-colors"
+                      >
+                        <Pencil className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteWire(wireType.id)}
+                        disabled={deleteWireMutation.isPending}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
                 ))
               ) : (
