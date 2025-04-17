@@ -27,7 +27,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-
       const wireType = await storage.getWireType(id);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
@@ -48,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (typeof requestData.ratio === 'number') {
         requestData.ratio = String(requestData.ratio);
       }
-      
+
       const validatedData = insertWireTypeSchema.parse(requestData);
       const wireType = await storage.createWireType(validatedData);
       return res.status(201).json(wireType);
@@ -62,7 +61,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete a wire type
   // Update a wire type
   app.put("/api/wire-types/:id", async (req: Request, res: Response) => {
     try {
@@ -70,12 +68,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-
-      const wireType = await storage.getWireType(id);
-      if (!wireType) {
+      const existingWireType = await storage.getWireType(id);
+      if (!existingWireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
-      
+
       // Convert ratio to string if it's a number before validation
       const requestData = { ...req.body };
       if (typeof requestData.ratio === 'number') {
@@ -83,10 +80,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const validatedData = insertWireTypeSchema.parse(requestData);
-      const updatedWireType = { ...wireType, ...validatedData };
-      await storage.updateWireType(id, updatedWireType);
-      
-      return res.status(200).json(updatedWireType);
+      const updatedWireType = { ...existingWireType, ...validatedData };
+      const result = await storage.updateWireType(id, updatedWireType);
+
+      return res.status(200).json(result);
     } catch (error) {
       console.error("Error updating wire type:", error);
       if (error instanceof ZodError) {
@@ -103,7 +100,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-
       const success = await storage.deleteWireType(id);
       if (!success) {
         return res.status(404).json({ message: "Wire type not found or cannot be deleted (default wire type)" });
@@ -120,7 +116,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/calculate", async (req: Request, res: Response) => {
     try {
       const { wireTypeId, weight, weightUnit } = calculateSchema.parse(req.body);
-      
       const wireType = await storage.getWireType(wireTypeId);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
@@ -128,10 +123,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Convert weight to pounds if in ounces (1 pound = 16 ounces)
       const weightInPounds = weightUnit === "oz" ? weight / 16 : weight;
-      
+
       // Calculate length: (weight × 100) ÷ (weight per 100ft)
       const length = (weightInPounds * 100) / Number(wireType.ratio);
-      
+
       return res.status(200).json({
         wireType,
         weight,

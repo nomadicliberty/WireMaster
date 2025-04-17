@@ -3,6 +3,8 @@ import {
   type WireType, 
   type InsertWireType
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -14,53 +16,59 @@ export interface IStorage {
   seedDefaultWireTypes(): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private wireTypes: Map<number, WireType>;
-  currentId: number;
-
-  constructor() {
-    this.wireTypes = new Map();
-    this.currentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getWireTypes(): Promise<WireType[]> {
-    return Array.from(this.wireTypes.values());
+    return await db.select().from(wireTypes);
   }
 
   async getWireType(id: number): Promise<WireType | undefined> {
-    return this.wireTypes.get(id);
+    const [wireType] = await db.select().from(wireTypes).where(eq(wireTypes.id, id));
+    return wireType || undefined;
   }
 
   async createWireType(insertWireType: InsertWireType): Promise<WireType> {
-    const id = this.currentId++;
-    const wireType: WireType = { ...insertWireType, id };
-    this.wireTypes.set(id, wireType);
+    const [wireType] = await db
+      .insert(wireTypes)
+      .values(insertWireType)
+      .returning();
     return wireType;
   }
 
   async updateWireType(id: number, wireType: WireType): Promise<WireType> {
-    this.wireTypes.set(id, wireType);
-    return wireType;
+    const { id: _, ...updateValues } = wireType;
+    const [updatedWireType] = await db
+      .update(wireTypes)
+      .set(updateValues)
+      .where(eq(wireTypes.id, id))
+      .returning();
+    return updatedWireType;
   }
 
   async deleteWireType(id: number): Promise<boolean> {
-    return this.wireTypes.delete(id);
+    const result = await db
+      .delete(wireTypes)
+      .where(eq(wireTypes.id, id))
+      .returning({ id: wireTypes.id });
+    return result.length > 0;
   }
 
   async seedDefaultWireTypes(): Promise<void> {
+    // Check if there are any wire types
+    const existingWireTypes = await this.getWireTypes();
+    
     // Only seed if there are no wire types yet
-    if (this.wireTypes.size === 0) {
+    if (existingWireTypes.length === 0) {
       const defaultWireTypes: InsertWireType[] = [
-        { name: "10/2 NM-B (Romex)", ratio: 13.0, isDefault: 1 },
-        { name: "12/2 NM-B (Romex)", ratio: 8.46, isDefault: 1 },
-        { name: "12/3 NM-B (Romex)", ratio: 11.2, isDefault: 1 },
-        { name: "14/2 NM-B (Romex)", ratio: 5.84, isDefault: 1 },
-        { name: "14/3 NM-B (Romex)", ratio: 7.7, isDefault: 1 },
-        { name: "12/2 MC", ratio: 10.76, isDefault: 1 }, // 26.9/250*100 = 10.76 lbs/100ft
-        { name: "10/2 UF-B", ratio: 14.0, isDefault: 1 },
-        { name: "12/2 UF-B", ratio: 9.5, isDefault: 1 },
-        { name: "14/2 UF-B", ratio: 7.275, isDefault: 1 },
-        { name: "6/3 SER", ratio: 18.0, isDefault: 1 }
+        { name: "10/2 NM-B (Romex)", ratio: "13.0", isDefault: 1 },
+        { name: "12/2 NM-B (Romex)", ratio: "8.46", isDefault: 1 },
+        { name: "12/3 NM-B (Romex)", ratio: "11.2", isDefault: 1 },
+        { name: "14/2 NM-B (Romex)", ratio: "5.84", isDefault: 1 },
+        { name: "14/3 NM-B (Romex)", ratio: "7.7", isDefault: 1 },
+        { name: "12/2 MC", ratio: "10.76", isDefault: 1 },
+        { name: "10/2 UF-B", ratio: "14.0", isDefault: 1 },
+        { name: "12/2 UF-B", ratio: "9.5", isDefault: 1 },
+        { name: "14/2 UF-B", ratio: "7.275", isDefault: 1 },
+        { name: "6/3 SER", ratio: "18.0", isDefault: 1 }
       ];
 
       for (const wireType of defaultWireTypes) {
@@ -70,4 +78,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
