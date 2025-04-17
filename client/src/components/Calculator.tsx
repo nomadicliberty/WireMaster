@@ -23,9 +23,11 @@ export function Calculator() {
   
   const [selectedWireTypeId, setSelectedWireTypeId] = useState<string>("");
   const [weight, setWeight] = useState<string>("");
+  const [weightUnit, setWeightUnit] = useState<"lbs" | "oz">("lbs");
   const [result, setResult] = useState<{
     wireType: WireType;
     weight: number;
+    weightUnit: string;
     length: number;
   } | null>(null);
 
@@ -64,6 +66,7 @@ export function Calculator() {
     calculateMutation.mutate({
       wireTypeId,
       weight: weightValue,
+      weightUnit,
     });
   };
 
@@ -103,19 +106,32 @@ export function Calculator() {
           </div>
 
           <div className="mb-6">
-            <Label htmlFor="weight" className="mb-1">Wire Weight (lbs)</Label>
-            <div className="relative">
-              <Input
-                id="weight"
-                type="number"
-                placeholder="Enter weight"
-                min="0.01"
-                step="0.01"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-              />
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <span className="text-gray-500 text-sm">lbs</span>
+            <Label htmlFor="weight" className="mb-1">Wire Weight</Label>
+            <div className="flex space-x-2">
+              <div className="relative flex-1">
+                <Input
+                  id="weight"
+                  type="number"
+                  placeholder="Enter weight"
+                  min="0.01"
+                  step="0.01"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                />
+              </div>
+              <div className="w-24">
+                <Select
+                  value={weightUnit}
+                  onValueChange={(value) => setWeightUnit(value as "lbs" | "oz")}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lbs">lbs</SelectItem>
+                    <SelectItem value="oz">oz</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -146,7 +162,7 @@ export function Calculator() {
                 <div className="ml-3 flex-1">
                   <p className="text-sm text-blue-700">
                     For <span className="font-semibold">{result.wireType.name}</span> weighing{" "}
-                    <span className="font-semibold">{result.weight}</span> lbs:
+                    <span className="font-semibold">{result.weight}</span> {result.weightUnit}:
                   </p>
 
                   <div className="mt-2 text-2xl font-bold text-center text-blue-800">

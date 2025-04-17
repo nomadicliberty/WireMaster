@@ -79,19 +79,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Calculate wire length based on weight
   app.post("/api/calculate", async (req: Request, res: Response) => {
     try {
-      const { wireTypeId, weight } = calculateSchema.parse(req.body);
+      const { wireTypeId, weight, weightUnit } = calculateSchema.parse(req.body);
       
       const wireType = await storage.getWireType(wireTypeId);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
 
+      // Convert weight to pounds if in ounces (1 pound = 16 ounces)
+      const weightInPounds = weightUnit === "oz" ? weight / 16 : weight;
+      
       // Calculate length: (weight × 100) ÷ (weight per 100ft)
-      const length = (weight * 100) / Number(wireType.ratio);
+      const length = (weightInPounds * 100) / Number(wireType.ratio);
       
       return res.status(200).json({
         wireType,
         weight,
+        weightUnit,
         length
       });
     } catch (error) {
