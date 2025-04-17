@@ -17,10 +17,11 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getWireTypes(): Promise<WireType[]> {
-    // Return wire types in natural database order
-    // We'll do custom sorting on the client side
-    return await db.select().from(wireTypes);
+  async getWireTypes(userId: string): Promise<WireType[]> {
+    // Get default wire types and user's custom wire types
+    return await db.select().from(wireTypes)
+      .where(eq(wireTypes.isDefault, 1))
+      .or(eq(wireTypes.userId, userId));
   }
 
   async getWireType(id: number): Promise<WireType | undefined> {

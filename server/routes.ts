@@ -1,18 +1,33 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { v4 as uuidv4 } from 'uuid';
+import cookieParser from 'cookie-parser';
 import { ZodError } from "zod";
 import { insertWireTypeSchema, calculateSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.use(cookieParser());
+  
+  // Middleware to ensure user ID
+  app.use((req: Request, res: Response, next) => {
+    let userId = req.cookies.userId;
+    if (!userId) {
+      userId = uuidv4();
+      res.cookie('userId', userId, { maxAge: 365 * 24 * 60 * 60 * 1000 }); // 1 year
+    }
+    req.userId = userId;
+    next();
+  });
+
   // Seed default wire types
   await storage.seedDefaultWireTypes();
 
   // Get all wire types
   app.get("/api/wire-types", async (req: Request, res: Response) => {
     try {
-      const wireTypes = await storage.getWireTypes();
+      const wireTypes = await storage.getWireTypes(req.userId);
       return res.status(200).json(wireTypes);
     } catch (error) {
       console.error("Error fetching wire types:", error);
