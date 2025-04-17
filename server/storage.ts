@@ -3,61 +3,61 @@ import {
   type WireType, 
   type InsertWireType
 } from "@shared/schema";
-import { drizzle } from 'drizzle-orm/node-postgres';
-import pkg from 'pg';
-const { Pool } = pkg;
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
-  getWireTypes(userId: string): Promise<WireType[]>;
-  getWireType(userId: string, id: number): Promise<WireType | undefined>;
-  createWireType(userId: string, wireType: InsertWireType): Promise<WireType>;
-  updateWireType(userId: string, id: number, wireType: WireType): Promise<WireType>;
-  deleteWireType(userId: string, id: number): Promise<boolean>;
-  seedDefaultWireTypes(userId: string): Promise<void>;
+  getWireTypes(): Promise<WireType[]>;
+  getWireType(id: number): Promise<WireType | undefined>;
+  createWireType(wireType: InsertWireType): Promise<WireType>;
+  updateWireType(id: number, wireType: WireType): Promise<WireType>;
+  deleteWireType(id: number): Promise<boolean>;
+  seedDefaultWireTypes(): Promise<void>;
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
-
-const db = drizzle(pool);
-
-export class PostgresStorage implements IStorage {
-  async getWireTypes(userId: string): Promise<WireType[]> {
-    return await db.select().from(wireTypes).where(eq(wireTypes.userId, userId));
+export class DatabaseStorage implements IStorage {
+  async getWireTypes(): Promise<WireType[]> {
+    return await db.select().from(wireTypes);
   }
 
-  async getWireType(userId: string, id: number): Promise<WireType | undefined> {
-    const results = await db.select().from(wireTypes)
-      .where(and(eq(wireTypes.id, id), eq(wireTypes.userId, userId)));
-    return results[0];
+  async getWireType(id: number): Promise<WireType | undefined> {
+    const [wireType] = await db.select().from(wireTypes).where(eq(wireTypes.id, id));
+    return wireType || undefined;
   }
 
-  async createWireType(userId: string, wireType: InsertWireType): Promise<WireType> {
-    const [result] = await db.insert(wireTypes)
-      .values({ ...wireType, userId })
+  async createWireType(insertWireType: InsertWireType): Promise<WireType> {
+    const [wireType] = await db
+      .insert(wireTypes)
+      .values(insertWireType)
       .returning();
-    return result;
+    return wireType;
   }
 
-  async updateWireType(userId: string, id: number, wireType: WireType): Promise<WireType> {
-    const [result] = await db.update(wireTypes)
-      .set(wireType)
-      .where(and(eq(wireTypes.id, id), eq(wireTypes.userId, userId)))
+  async updateWireType(id: number, wireType: WireType): Promise<WireType> {
+    const { id: _, ...updateValues } = wireType;
+    const [updatedWireType] = await db
+      .update(wireTypes)
+      .set(updateValues)
+      .where(eq(wireTypes.id, id))
       .returning();
-    return result;
+    return updatedWireType;
   }
 
-  async deleteWireType(userId: string, id: number): Promise<boolean> {
-    const result = await db.delete(wireTypes)
-      .where(and(eq(wireTypes.id, id), eq(wireTypes.userId, userId)));
+  async deleteWireType(id: number): Promise<boolean> {
+    const result = await db
+      .delete(wireTypes)
+      .where(eq(wireTypes.id, id))
+      .returning({ id: wireTypes.id });
     return result.length > 0;
   }
 
-  async seedDefaultWireTypes(userId: string): Promise<void> {
-    const existing = await this.getWireTypes(userId);
-    if (existing.length === 0) {
+  async seedDefaultWireTypes(): Promise<void> {
+    // Check if there are any wire types
+    const existingWireTypes = await this.getWireTypes();
+    
+    // Only seed if there are no wire types yet
+    if (existingWireTypes.length === 0) {
       const defaultWireTypes: InsertWireType[] = [
         { name: "10/2 NM-B (Romex)", ratio: "13.0", isDefault: 1 },
         { name: "12/2 NM-B (Romex)", ratio: "8.46", isDefault: 1 },
@@ -72,10 +72,10 @@ export class PostgresStorage implements IStorage {
       ];
 
       for (const wireType of defaultWireTypes) {
-        await this.createWireType(userId, wireType);
+        await this.createWireType(wireType);
       }
     }
   }
 }
 
-export const storage = new PostgresStorage();
+export const storage = new DatabaseStorage();

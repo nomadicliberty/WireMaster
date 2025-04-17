@@ -12,8 +12,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all wire types
   app.get("/api/wire-types", async (req: Request, res: Response) => {
     try {
-      const userId = req.cookies.userId;
-      const wireTypes = await storage.getWireTypes(userId);
+      const wireTypes = await storage.getWireTypes();
       return res.status(200).json(wireTypes);
     } catch (error) {
       console.error("Error fetching wire types:", error);
@@ -28,8 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-      const userId = req.cookies.userId;
-      const wireType = await storage.getWireType(userId, id);
+      const wireType = await storage.getWireType(id);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
@@ -51,8 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const validatedData = insertWireTypeSchema.parse(requestData);
-      const userId = req.cookies.userId;
-      const wireType = await storage.createWireType(userId, validatedData);
+      const wireType = await storage.createWireType(validatedData);
       return res.status(201).json(wireType);
     } catch (error) {
       console.error("Error creating wire type:", error);
@@ -64,7 +61,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete a wire type
   // Update a wire type
   app.put("/api/wire-types/:id", async (req: Request, res: Response) => {
     try {
@@ -72,9 +68,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-      const userId = req.cookies.userId;
-      const wireType = await storage.getWireType(userId, id);
-      if (!wireType) {
+      const existingWireType = await storage.getWireType(id);
+      if (!existingWireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
 
@@ -85,10 +80,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const validatedData = insertWireTypeSchema.parse(requestData);
-      const updatedWireType = { ...wireType, ...validatedData };
-      await storage.updateWireType(userId, id, updatedWireType);
+      const updatedWireType = { ...existingWireType, ...validatedData };
+      const result = await storage.updateWireType(id, updatedWireType);
 
-      return res.status(200).json(updatedWireType);
+      return res.status(200).json(result);
     } catch (error) {
       console.error("Error updating wire type:", error);
       if (error instanceof ZodError) {
@@ -105,8 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
-      const userId = req.cookies.userId;
-      const success = await storage.deleteWireType(userId, id);
+      const success = await storage.deleteWireType(id);
       if (!success) {
         return res.status(404).json({ message: "Wire type not found or cannot be deleted (default wire type)" });
       }
@@ -122,8 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/calculate", async (req: Request, res: Response) => {
     try {
       const { wireTypeId, weight, weightUnit } = calculateSchema.parse(req.body);
-      const userId = req.cookies.userId;
-      const wireType = await storage.getWireType(userId, wireTypeId);
+      const wireType = await storage.getWireType(wireTypeId);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
