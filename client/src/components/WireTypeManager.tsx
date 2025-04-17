@@ -112,7 +112,13 @@ export function WireTypeManager() {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    addWireMutation.mutate(values);
+    if (editingWireType && values.id) {
+      // If we're editing an existing wire type
+      editWireMutation.mutate(values);
+    } else {
+      // If we're adding a new wire type
+      addWireMutation.mutate(values);
+    }
   };
 
   const handleDeleteWire = (id: number) => {
@@ -211,12 +217,20 @@ export function WireTypeManager() {
       </Card>
 
       {/* Add Wire Type Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+          setIsAddDialogOpen(open);
+          if (!open) {
+            setEditingWireType(null);
+            form.reset({ name: "", ratio: undefined, isDefault: 0 });
+          }
+        }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Wire Type</DialogTitle>
+            <DialogTitle>{editingWireType ? "Edit Wire Type" : "Add New Wire Type"}</DialogTitle>
             <DialogDescription>
-              Enter the details of the wire type you want to add to your custom library.
+              {editingWireType 
+                ? "Edit the details of this wire type." 
+                : "Enter the details of the wire type you want to add to your custom library."}
             </DialogDescription>
           </DialogHeader>
 
@@ -274,9 +288,9 @@ export function WireTypeManager() {
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={addWireMutation.isPending}
+                  disabled={addWireMutation.isPending || editWireMutation.isPending}
                 >
-                  Add Wire Type
+                  {editingWireType ? "Save Changes" : "Add Wire Type"}
                 </Button>
               </DialogFooter>
             </form>

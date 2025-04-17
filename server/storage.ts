@@ -9,6 +9,7 @@ export interface IStorage {
   getWireTypes(): Promise<WireType[]>;
   getWireType(id: number): Promise<WireType | undefined>;
   createWireType(wireType: InsertWireType): Promise<WireType>;
+  updateWireType(id: number, wireType: WireType): Promise<WireType>;
   deleteWireType(id: number): Promise<boolean>;
   seedDefaultWireTypes(): Promise<void>;
 }
