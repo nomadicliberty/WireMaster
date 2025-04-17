@@ -9,16 +9,13 @@ export const wireTypes = pgTable("wireTypes", {
   isDefault: integer("isDefault").default(0).notNull(),
 });
 
-export const insertWireTypeSchema = createInsertSchema(wireTypes)
-  .pick({
-    name: true,
-    ratio: true,
-    isDefault: true,
-  })
-  .transform((data) => ({
-    ...data,
-    ratio: typeof data.ratio === 'number' ? String(data.ratio) : data.ratio
-  }));
+export const insertWireTypeSchema = z.object({
+  name: z.string().min(1),
+  ratio: z.union([z.string(), z.number()]).transform(val => 
+    typeof val === 'number' ? String(val) : val
+  ),
+  isDefault: z.number().default(0),
+});
 
 export type InsertWireType = z.infer<typeof insertWireTypeSchema>;
 export type WireType = typeof wireTypes.$inferSelect;
