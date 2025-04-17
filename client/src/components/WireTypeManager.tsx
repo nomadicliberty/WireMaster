@@ -212,6 +212,7 @@ export function WireTypeManager() {
           <div className="text-xs text-gray-600 space-y-2">
             <p><span className="font-medium">How to use:</span> Select a wire type, enter the weight, and calculate the remaining length.</p>
             <p><span className="font-medium">Add custom wire:</span> Click "Add New Wire Type" and enter the wire name and its weight per 100 feet.</p>
+            <p><span className="font-medium">Note:</span> Wire weights are approximate and may vary by manufacturer.</p>
           </div>
         </CardContent>
       </Card>
