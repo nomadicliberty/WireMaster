@@ -17,12 +17,9 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getWireTypes(userId: string): Promise<WireType[]> {
-    // Get default wire types and user's custom wire types
-    return await db.select().from(wireTypes)
-      .where(
-        eq(wireTypes.isDefault, 1)
-      );
+  async getWireTypes(): Promise<WireType[]> {
+    // Return all wire types
+    return await db.select().from(wireTypes);
   }
 
   async getWireType(id: number): Promise<WireType | undefined> {

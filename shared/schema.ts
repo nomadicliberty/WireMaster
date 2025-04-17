@@ -7,7 +7,6 @@ export const wireTypes = pgTable("wireTypes", {
   name: text("name").notNull(),
   ratio: numeric("ratio", { precision: 10, scale: 2 }).notNull(),
   isDefault: integer("isDefault").default(0).notNull(),
-  userId: text("userId").notNull(),
 });
 
 export const insertWireTypeSchema = z.object({
