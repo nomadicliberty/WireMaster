@@ -4,7 +4,8 @@ import {
   type InsertWireType
 } from "@shared/schema";
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import pkg from 'pg';
+const { Pool } = pkg;
 
 // Interface for storage operations
 export interface IStorage {
