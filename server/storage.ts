@@ -18,7 +18,8 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getWireTypes(): Promise<WireType[]> {
-    return await db.select().from(wireTypes);
+    // Sort wire types by name for consistent ordering
+    return await db.select().from(wireTypes).orderBy(wireTypes.name);
   }
 
   async getWireType(id: number): Promise<WireType | undefined> {
