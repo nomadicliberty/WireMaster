@@ -66,7 +66,7 @@ export function Calculator() {
     if (isNaN(weightValue) || weightValue <= 0 || weightValue > 999.99) {
       toast({
         title: "Invalid weight",
-        description: "Please enter a positive number with up to 2 decimal places (max 999.99).",
+        description: "Please enter a number between 0.01 and 999.99 with up to 2 decimal places.",
         variant: "destructive",
       });
       return;
