@@ -20,7 +20,7 @@ import { useWireTypes } from "@/hooks/useWireTypes";
 export function Calculator() {
   const { toast } = useToast();
   const { wireTypes, isLoading } = useWireTypes();
-  
+
   const [selectedWireTypeId, setSelectedWireTypeId] = useState<string>("");
   const [weight, setWeight] = useState<string>("");
   const [weightUnit, setWeightUnit] = useState<"lbs" | "oz">("lbs");
@@ -50,10 +50,10 @@ export function Calculator() {
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const wireTypeId = parseInt(selectedWireTypeId);
     const weightValue = parseFloat(weight);
-    
+
     if (isNaN(wireTypeId) || isNaN(weightValue) || weightValue <= 0) {
       toast({
         title: "Invalid input",
@@ -62,7 +62,7 @@ export function Calculator() {
       });
       return;
     }
-    
+
     calculateMutation.mutate({
       wireTypeId,
       weight: weightValue,
@@ -101,6 +101,12 @@ export function Calculator() {
                     {wireType.name} - {wireType.ratio} lbs/100ft
                   </SelectItem>
                 ))}
+                {/* Separator with text */}
+                {wireTypes.some(w => w.isDefault === 0) && (
+                  <div className="px-2 py-1.5 -mx-1 my-1 border-t border-gray-100 text-xs text-gray-500">
+                    Custom Wire Types
+                  </div>
+                )}
               </SelectContent>
             </Select>
           </div>
