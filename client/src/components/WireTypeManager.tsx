@@ -132,7 +132,7 @@ export function WireTypeManager() {
   return (
     <>
       <Card className="shadow-md overflow-hidden mb-6">
-        <div className="bg-secondary px-4 py-3">
+        <div className="bg-primary px-4 py-3">
           <h2 className="text-lg font-semibold text-white">Manage Wire Types</h2>
         </div>
         <CardContent className="p-4 sm:p-6">
@@ -230,8 +230,8 @@ export function WireTypeManager() {
 
       {/* Quick Reference Card */}
       <Card className="shadow-md overflow-hidden">
-        <div className="bg-gray-100 px-4 py-3 border-b">
-          <h2 className="text-sm font-medium text-gray-700">Quick Reference</h2>
+        <div className="bg-primary px-4 py-3 border-b">
+          <h2 className="text-sm font-medium text-white">Quick Reference</h2>
         </div>
         <CardContent className="p-4">
           <div className="text-xs text-gray-600 space-y-2">
