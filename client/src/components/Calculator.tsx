@@ -54,10 +54,19 @@ export function Calculator() {
     const wireTypeId = parseInt(selectedWireTypeId);
     const weightValue = parseFloat(weight);
 
-    if (isNaN(wireTypeId) || isNaN(weightValue) || weightValue <= 0) {
+    if (isNaN(wireTypeId)) {
       toast({
-        title: "Invalid input",
-        description: "Please select a wire type and enter a valid weight.",
+        title: "Wire type required",
+        description: "Please select a wire type from the dropdown.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (isNaN(weightValue) || weightValue <= 0 || weightValue > 999.99) {
+      toast({
+        title: "Invalid weight",
+        description: "Please enter a positive number with up to 2 decimal places (max 999.99).",
         variant: "destructive",
       });
       return;
@@ -131,7 +140,7 @@ export function Calculator() {
                 <Input
                   id="weight"
                   type="number"
-                  placeholder="Enter weight (0.01-999.99)"
+                  placeholder="Enter weight"
                   min="0.01"
                   step="0.01"
                   pattern="^\d*\.?\d{0,2}$"
