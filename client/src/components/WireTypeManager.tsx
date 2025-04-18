@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -148,12 +149,35 @@ export function WireTypeManager() {
 
           <div className="border rounded-md overflow-hidden">
             <div className="bg-gray-50 px-4 py-2 border-b">
-              <h3 className="text-sm font-medium text-gray-700">Your Custom Wire Types</h3>
+              <h3 className="text-sm font-medium text-gray-700">Wire Type Library</h3>
             </div>
 
             <div className="divide-y divide-gray-200 max-h-64 overflow-y-auto">
-              {wireTypes.length > 0 ? (
-                wireTypes.map((wireType) => (
+              {/* Default Wire Types Section */}
+              <div className="bg-gray-50 px-4 py-2 sticky top-0 z-10 border-t border-b">
+                <h3 className="text-sm font-medium text-gray-700">Default Wire Types (Cannot be modified)</h3>
+              </div>
+              {wireTypes
+                .filter(wireType => wireType.isDefault === 1)
+                .map((wireType) => (
+                  <div key={wireType.id} className="px-4 py-3 flex justify-between items-center bg-gray-50">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">{wireType.name}</h4>
+                      <p className="text-xs text-gray-500">{wireType.ratio} lbs per 100ft</p>
+                    </div>
+                    <div>
+                      <Badge variant="outline" className="text-gray-500 bg-gray-100">Default</Badge>
+                    </div>
+                  </div>
+                ))}
+              
+              {/* Custom Wire Types Section */}
+              <div className="bg-gray-50 px-4 py-2 sticky top-0 z-10 border-t border-b">
+                <h3 className="text-sm font-medium text-gray-700">Your Custom Wire Types</h3>
+              </div>
+              {wireTypes
+                .filter(wireType => wireType.isDefault === 0)
+                .map((wireType) => (
                   <div key={wireType.id} className="px-4 py-3 flex justify-between items-center">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900">{wireType.name}</h4>
@@ -188,8 +212,9 @@ export function WireTypeManager() {
                       </Button>
                     </div>
                   </div>
-                ))
-              ) : (
+                ))}
+              
+              {wireTypes.filter(wireType => wireType.isDefault === 0).length === 0 && (
                 <div className="px-4 py-4 text-center text-sm text-gray-500">
                   No custom wire types added yet.
                 </div>
