@@ -1,3 +1,4 @@
+
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
@@ -11,17 +12,21 @@ const dbUrl = process.env.DATABASE_URL || (process.env.NODE_ENV === 'development
   : undefined);
 
 let pool: Pool | null = null;
-let db: ReturnType<typeof drizzle> | null = null;
+let db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 if (!dbUrl) {
   console.error("DATABASE_URL environment variable is not set in production");
   // Don't exit in production to avoid crash loops
+  pool = null;
+  db = null;
 } else {
   try {
     pool = new Pool({ connectionString: dbUrl });
     db = drizzle(pool, { schema });
   } catch (error) {
     console.error("Failed to connect to database:", error);
+    pool = null;
+    db = null;
   }
 }
 
