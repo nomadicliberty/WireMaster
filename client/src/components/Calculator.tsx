@@ -79,8 +79,8 @@ export function Calculator() {
       <div className="bg-primary px-4 py-3">
         <h2 className="text-lg font-semibold text-white">Calculate Wire Length</h2>
       </div>
-      <CardContent className="p-4 sm:p-6">
-        <p className="text-gray-600 mb-6">
+      <CardContent className="p-3 sm:p-6">
+        <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
           Enter the weight of your remaining wire and select the wire type to calculate the length.
         </p>
 
@@ -96,17 +96,30 @@ export function Calculator() {
                 <SelectValue placeholder="Select wire type..." />
               </SelectTrigger>
               <SelectContent>
-                {wireTypes.map((wireType) => (
-                  <SelectItem key={wireType.id} value={wireType.id.toString()}>
-                    {wireType.name} - {wireType.ratio} lbs/100ft
-                  </SelectItem>
-                ))}
+                {/* Default wire types */}
+                {wireTypes
+                  .filter(wireType => wireType.isDefault === 1)
+                  .map((wireType) => (
+                    <SelectItem key={wireType.id} value={wireType.id.toString()}>
+                      {wireType.name} - {wireType.ratio} lbs/100ft
+                    </SelectItem>
+                  ))}
+
                 {/* Separator with text */}
                 {wireTypes.some(w => w.isDefault === 0) && (
                   <div className="px-2 py-1.5 -mx-1 my-1 border-t border-gray-100 text-xs text-gray-500">
                     Custom Wire Types
                   </div>
                 )}
+
+                {/* Custom wire types */}
+                {wireTypes
+                  .filter(wireType => wireType.isDefault === 0)
+                  .map((wireType) => (
+                    <SelectItem key={wireType.id} value={wireType.id.toString()}>
+                      {wireType.name} - {wireType.ratio} lbs/100ft
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
@@ -118,9 +131,11 @@ export function Calculator() {
                 <Input
                   id="weight"
                   type="number"
-                  placeholder="Enter weight"
+                  placeholder="Enter weight (0.01-999.99)"
                   min="0.01"
                   step="0.01"
+                  pattern="^\d*\.?\d{0,2}$"
+                  title="Please enter a number with up to 2 decimal places"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                 />

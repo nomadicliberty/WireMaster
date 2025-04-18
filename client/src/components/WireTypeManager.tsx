@@ -131,12 +131,12 @@ export function WireTypeManager() {
 
   return (
     <>
-      <Card className="shadow-md overflow-hidden mb-6">
-        <div className="bg-secondary px-4 py-3">
+      <Card className="shadow-md overflow-hidden mb-4 sm:mb-6">
+        <div className="bg-primary px-4 py-3">
           <h2 className="text-lg font-semibold text-white">Manage Wire Types</h2>
         </div>
-        <CardContent className="p-4 sm:p-6">
-          <p className="text-gray-600 mb-6">Add custom wire types to your library or manage existing ones.</p>
+        <CardContent className="p-3 sm:p-6">
+          <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Add custom wire types to your library or manage existing ones.</p>
 
           <Button 
             className="w-full mb-6"
@@ -230,10 +230,10 @@ export function WireTypeManager() {
 
       {/* Quick Reference Card */}
       <Card className="shadow-md overflow-hidden">
-        <div className="bg-gray-100 px-4 py-3 border-b">
-          <h2 className="text-sm font-medium text-gray-700">Quick Reference</h2>
+        <div className="bg-primary px-4 py-3 border-b">
+          <h2 className="text-sm font-medium text-white">Quick Reference</h2>
         </div>
-        <CardContent className="p-4">
+        <CardContent className="p-3 sm:p-4">
           <div className="text-xs text-gray-600 space-y-2">
             <p><span className="font-medium">How to use:</span> Select a wire type, enter the weight, and calculate the remaining length.</p>
             <p><span className="font-medium">Add custom wire:</span> Click "Add New Wire Type" and enter the wire name and its weight per 100 feet.</p>
@@ -261,13 +261,13 @@ export function WireTypeManager() {
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Wire Name/Description</FormLabel>
+                    <FormLabel className="text-sm">Wire Name/Description</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., 2/0 THHN Stranded" {...field} />
                     </FormControl>
@@ -281,7 +281,7 @@ export function WireTypeManager() {
                 name="ratio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Weight per 100 feet (lbs)</FormLabel>
+                    <FormLabel className="text-sm">Weight per 100 feet</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input 
@@ -296,7 +296,7 @@ export function WireTypeManager() {
                         </div>
                       </div>
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="text-xs sm:text-sm">
                       Enter the weight of 100 feet of this wire type in pounds.
                     </FormDescription>
                     <FormMessage />
