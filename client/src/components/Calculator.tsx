@@ -79,8 +79,8 @@ export function Calculator() {
       <div className="bg-primary px-4 py-3">
         <h2 className="text-lg font-semibold text-white">Calculate Wire Length</h2>
       </div>
-      <CardContent className="p-4 sm:p-6">
-        <p className="text-gray-600 mb-6">
+      <CardContent className="p-3 sm:p-6">
+        <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
           Enter the weight of your remaining wire and select the wire type to calculate the length.
         </p>
 
@@ -131,7 +131,7 @@ export function Calculator() {
                 <Input
                   id="weight"
                   type="number"
-                  placeholder="Enter weight (up to 2 decimal places)"
+                  placeholder="Enter weight (0.01-999.99)"
                   min="0.01"
                   step="0.01"
                   pattern="^\d*\.?\d{0,2}$"
