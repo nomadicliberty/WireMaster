@@ -5,20 +5,25 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL environment variable is not set");
-  process.exit(1);
-}
+// Use a fallback URL for development
+const dbUrl = process.env.DATABASE_URL || (process.env.NODE_ENV === 'development' 
+  ? 'postgres://postgres:postgres@localhost:5432/dev'
+  : undefined);
 
-let pool;
-let db;
-
-try {
-  pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  db = drizzle(pool, { schema });
-} catch (error) {
-  console.error("Failed to connect to database:", error);
-  process.exit(1);
+if (!dbUrl) {
+  console.error("DATABASE_URL environment variable is not set in production");
+  // Don't exit in production to avoid crash loops
+  pool = null;
+  db = null;
+} else {
+  try {
+    pool = new Pool({ connectionString: dbUrl });
+    db = drizzle(pool, { schema });
+  } catch (error) {
+    console.error("Failed to connect to database:", error);
+    pool = null;
+    db = null;
+  }
 }
 
 export { pool, db };
