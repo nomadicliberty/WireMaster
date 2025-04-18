@@ -104,7 +104,7 @@ export function Calculator() {
                       {wireType.name} - {wireType.ratio} lbs/100ft
                     </SelectItem>
                   ))}
-                
+
                 {/* Separator with text */}
                 {wireTypes.some(w => w.isDefault === 0) && (
                   <div className="px-2 py-1.5 -mx-1 my-1 border-t border-gray-100 text-xs text-gray-500">
@@ -131,9 +131,11 @@ export function Calculator() {
                 <Input
                   id="weight"
                   type="number"
-                  placeholder="Enter weight"
+                  placeholder="Enter weight (up to 2 decimal places)"
                   min="0.01"
                   step="0.01"
+                  pattern="^\d*\.?\d{0,2}$"
+                  title="Please enter a number with up to 2 decimal places"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                 />
