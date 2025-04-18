@@ -62,7 +62,7 @@ export function Calculator() {
       });
       return;
     }
-    
+
     if (isNaN(weightValue) || weightValue <= 0 || weightValue > 999.99) {
       toast({
         title: "Invalid weight",
@@ -144,7 +144,7 @@ export function Calculator() {
                   min="0.01"
                   step="0.01"
                   pattern="^\d*\.?\d{0,2}$"
-                  title="Please enter a number with up to 2 decimal places"
+                  title="Please enter a number between 0.01 and 999.99 with up to 2 decimal places"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                 />
