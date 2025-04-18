@@ -146,7 +146,12 @@ export function Calculator() {
                   pattern="^\d*\.?\d{0,2}$"
                   title="Please enter a number between 0.01 and 999.99 with up to 2 decimal places"
                   value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                      setWeight(value);
+                    }
+                  }}
                 />
               </div>
               <div className="w-24">
