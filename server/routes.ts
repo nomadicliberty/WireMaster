@@ -72,6 +72,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existingWireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
+      
+      // Prevent modifying default wire types
+      if (existingWireType.isDefault === 1) {
+        return res.status(403).json({ 
+          message: "Cannot modify default wire types. Create a custom wire type instead." 
+        });
+      }
 
       // Convert ratio to string if it's a number before validation
       const requestData = { ...req.body };
@@ -100,9 +107,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid wire type ID" });
       }
+      
+      // Check if it's a default wire type before deleting
+      const wireType = await storage.getWireType(id);
+      if (!wireType) {
+        return res.status(404).json({ message: "Wire type not found" });
+      }
+      
+      // Prevent deleting default wire types
+      if (wireType.isDefault === 1) {
+        return res.status(403).json({ 
+          message: "Cannot delete default wire types. Create custom wire types instead." 
+        });
+      }
+      
       const success = await storage.deleteWireType(id);
       if (!success) {
-        return res.status(404).json({ message: "Wire type not found or cannot be deleted (default wire type)" });
+        return res.status(500).json({ message: "Error occurred while deleting wire type" });
       }
 
       return res.status(200).json({ message: "Wire type deleted successfully" });
