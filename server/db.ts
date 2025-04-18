@@ -10,10 +10,15 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
+let pool;
+let db;
+
 try {
-  export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  export const db = drizzle(pool, { schema });
+  pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  db = drizzle(pool, { schema });
 } catch (error) {
   console.error("Failed to connect to database:", error);
   process.exit(1);
 }
+
+export { pool, db };
