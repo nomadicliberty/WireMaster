@@ -10,19 +10,18 @@ const dbUrl = process.env.DATABASE_URL || (process.env.NODE_ENV === 'development
   ? 'postgres://postgres:postgres@localhost:5432/dev'
   : undefined);
 
+let pool: Pool | null = null;
+let db: ReturnType<typeof drizzle> | null = null;
+
 if (!dbUrl) {
   console.error("DATABASE_URL environment variable is not set in production");
   // Don't exit in production to avoid crash loops
-  pool = null;
-  db = null;
 } else {
   try {
     pool = new Pool({ connectionString: dbUrl });
     db = drizzle(pool, { schema });
   } catch (error) {
     console.error("Failed to connect to database:", error);
-    pool = null;
-    db = null;
   }
 }
 
