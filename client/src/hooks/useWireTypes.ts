@@ -16,20 +16,20 @@ function parseWireName(name: string): ParsedWireName {
     wireType: name // Store original name
   };
 
-  // Match patterns like "10/2 NM-B", "12/3 UF-B", etc.
-  const sizeMatch = name.match(/^(\d+)\/(\d+)/);
+  // Match patterns like "10/2 NM-B", "12/3 UF-B", "Romex 10/2", etc.
+  const sizeMatch = name.match(/(\d+)\/(\d+)/);
   if (sizeMatch) {
     // Extract the size (first number)
     result.size = parseInt(sizeMatch[1]);
     
     // Determine wire type category
-    if (name.includes("NM-B") || name.includes("Romex")) {
+    if (name.startsWith("Romex") || name.includes("NM-B")) {
       result.category = "Romex";
-    } else if (name.includes("MC")) {
+    } else if (name.startsWith("MC") || name.includes("MC")) {
       result.category = "MC";
-    } else if (name.includes("UF-B")) {
-      result.category = "UF-B";
-    } else if (name.includes("SER")) {
+    } else if (name.startsWith("UF") || name.includes("UF-B")) {
+      result.category = "UF";
+    } else if (name.startsWith("SER") || name.includes("SER")) {
       result.category = "SER";
     } else if (name.includes("THHN")) {
       result.category = "THHN";
@@ -43,7 +43,7 @@ function parseWireName(name: string): ParsedWireName {
     const customCategory = 
       name.includes("Romex") ? "Romex" :
       name.includes("MC") ? "MC" :
-      name.includes("UF-B") ? "UF-B" :
+      name.includes("UF") ? "UF" :
       name.includes("SER") ? "SER" :
       name.includes("THHN") ? "THHN" :
       "Other";
@@ -57,7 +57,7 @@ function parseWireName(name: string): ParsedWireName {
 // Sort wire types by category and size
 function sortWireTypes(wireTypes: WireType[]): WireType[] {
   // Category priority order (categories not in this list will be sorted alphabetically)
-  const categoryOrder = ["Romex", "MC", "UF-B", "SER", "THHN"];
+  const categoryOrder = ["Romex", "MC", "UF", "SER", "THHN"];
 
   return [...wireTypes].sort((a, b) => {
     const parsedA = parseWireName(a.name);
@@ -82,8 +82,8 @@ function sortWireTypes(wireTypes: WireType[]): WireType[] {
       if (catCompare !== 0) return catCompare;
     }
 
-    // Same category, sort by size (ascending)
-    return parsedA.size - parsedB.size;
+    // Same category, sort by size (descending - biggest to smallest gauge)
+    return parsedB.size - parsedA.size;
   });
 }
 
