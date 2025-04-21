@@ -163,7 +163,7 @@ export function WireTypeManager() {
                   <div key={wireType.id} className="px-4 py-3 flex justify-between items-center bg-gray-50">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900">{wireType.name}</h4>
-                      <p className="text-xs text-gray-500">{wireType.ratio} lbs per 250ft</p>
+                      <p className="text-xs text-gray-500">{wireType.ratio} lbs/250ft</p>
                     </div>
                     <div>
                       <Badge variant="outline" className="text-gray-500 bg-gray-100">Default</Badge>
@@ -181,7 +181,7 @@ export function WireTypeManager() {
                   <div key={wireType.id} className="px-4 py-3 flex justify-between items-center">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900">{wireType.name}</h4>
-                      <p className="text-xs text-gray-500">{wireType.ratio} lbs per 250ft</p>
+                      <p className="text-xs text-gray-500">{wireType.ratio} lbs/250ft</p>
                     </div>
                     <div className="flex gap-2">
                       <Button
