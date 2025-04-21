@@ -82,8 +82,8 @@ function sortWireTypes(wireTypes: WireType[]): WireType[] {
       if (catCompare !== 0) return catCompare;
     }
 
-    // Same category, sort by size (descending - biggest to smallest gauge)
-    return parsedB.size - parsedA.size;
+    // Same category, sort by gauge (ascending - smaller gauge numbers first as they're thicker wires)
+    return parsedA.size - parsedB.size;
   });
 }
 
