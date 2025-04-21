@@ -59,7 +59,7 @@ export default function Home() {
                 This tool helps electricians calculate the remaining length of wire based on its weight.
               </p>
               <p className="text-sm text-gray-500 mb-2">
-                The calculation uses the formula: <span className="font-medium">Length = (Weight × 100) ÷ (Weight per 100ft)</span>
+                The calculation uses the formula: <span className="font-medium">Length = (Weight × 250) ÷ (Weight per 250ft)</span>
               </p>
               <p className="text-sm text-gray-500">
                 Custom wire types you add are stored and will be available the next time you visit.
