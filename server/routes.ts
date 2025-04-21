@@ -145,8 +145,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert weight to pounds if in ounces (1 pound = 16 ounces)
       const weightInPounds = weightUnit === "oz" ? weight / 16 : weight;
 
-      // Calculate length: (weight × 100) ÷ (weight per 100ft)
-      const length = (weightInPounds * 100) / Number(wireType.ratio);
+      // Calculate length: (weight × 250) ÷ (weight per 250ft)
+      const length = (weightInPounds * 250) / Number(wireType.ratio);
 
       return res.status(200).json({
         wireType,
