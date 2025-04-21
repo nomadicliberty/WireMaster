@@ -62,11 +62,11 @@ export function Calculator() {
       });
       return;
     }
-    
+
     if (isNaN(weightValue) || weightValue <= 0 || weightValue > 999.99) {
       toast({
         title: "Invalid weight",
-        description: "Please enter a positive number with up to 2 decimal places (max 999.99).",
+        description: "Please enter a number between 0.01 and 999.99 with up to 2 decimal places.",
         variant: "destructive",
       });
       return;
@@ -110,7 +110,7 @@ export function Calculator() {
                   .filter(wireType => wireType.isDefault === 1)
                   .map((wireType) => (
                     <SelectItem key={wireType.id} value={wireType.id.toString()}>
-                      {wireType.name} - {wireType.ratio} lbs/100ft
+                      {wireType.name} - {wireType.ratio} lbs/250ft
                     </SelectItem>
                   ))}
 
@@ -126,7 +126,7 @@ export function Calculator() {
                   .filter(wireType => wireType.isDefault === 0)
                   .map((wireType) => (
                     <SelectItem key={wireType.id} value={wireType.id.toString()}>
-                      {wireType.name} - {wireType.ratio} lbs/100ft
+                      {wireType.name} - {wireType.ratio} lbs/250ft
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -144,9 +144,14 @@ export function Calculator() {
                   min="0.01"
                   step="0.01"
                   pattern="^\d*\.?\d{0,2}$"
-                  title="Please enter a number with up to 2 decimal places"
+                  title="Please enter a number between 0.01 and 999.99 with up to 2 decimal places"
                   value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                      setWeight(value);
+                    }
+                  }}
                 />
               </div>
               <div className="w-24">
