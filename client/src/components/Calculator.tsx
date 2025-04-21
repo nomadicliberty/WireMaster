@@ -110,7 +110,7 @@ export function Calculator() {
                   .filter(wireType => wireType.isDefault === 1)
                   .map((wireType) => (
                     <SelectItem key={wireType.id} value={wireType.id.toString()}>
-                      {wireType.name} - {wireType.ratio} lbs/100ft
+                      {wireType.name} - {wireType.ratio} lbs/250ft
                     </SelectItem>
                   ))}
 
@@ -126,7 +126,7 @@ export function Calculator() {
                   .filter(wireType => wireType.isDefault === 0)
                   .map((wireType) => (
                     <SelectItem key={wireType.id} value={wireType.id.toString()}>
-                      {wireType.name} - {wireType.ratio} lbs/100ft
+                      {wireType.name} - {wireType.ratio} lbs/250ft
                     </SelectItem>
                   ))}
               </SelectContent>

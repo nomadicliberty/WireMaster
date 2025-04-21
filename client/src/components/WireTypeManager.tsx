@@ -163,14 +163,14 @@ export function WireTypeManager() {
                   <div key={wireType.id} className="px-4 py-3 flex justify-between items-center bg-gray-50">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900">{wireType.name}</h4>
-                      <p className="text-xs text-gray-500">{wireType.ratio} lbs per 100ft</p>
+                      <p className="text-xs text-gray-500">{wireType.ratio} lbs per 250ft</p>
                     </div>
                     <div>
                       <Badge variant="outline" className="text-gray-500 bg-gray-100">Default</Badge>
                     </div>
                   </div>
                 ))}
-              
+
               {/* Custom Wire Types Section */}
               <div className="bg-gray-50 px-4 py-2 sticky top-0 z-10 border-t border-b">
                 <h3 className="text-sm font-medium text-gray-700">Your Custom Wire Types</h3>
@@ -181,7 +181,7 @@ export function WireTypeManager() {
                   <div key={wireType.id} className="px-4 py-3 flex justify-between items-center">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900">{wireType.name}</h4>
-                      <p className="text-xs text-gray-500">{wireType.ratio} lbs per 100ft</p>
+                      <p className="text-xs text-gray-500">{wireType.ratio} lbs per 250ft</p>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -213,7 +213,7 @@ export function WireTypeManager() {
                     </div>
                   </div>
                 ))}
-              
+
               {wireTypes.filter(wireType => wireType.isDefault === 0).length === 0 && (
                 <div className="px-4 py-4 text-center text-sm text-gray-500">
                   No custom wire types added yet.
@@ -236,7 +236,7 @@ export function WireTypeManager() {
         <CardContent className="p-3 sm:p-4">
           <div className="text-xs text-gray-600 space-y-2">
             <p><span className="font-medium">How to use:</span> Select a wire type, enter the weight, and calculate the remaining length.</p>
-            <p><span className="font-medium">Add custom wire:</span> Click "Add New Wire Type" and enter the wire name and its weight per 100 feet.</p>
+            <p><span className="font-medium">Add custom wire:</span> Click "Add New Wire Type" and enter the wire name and its weight per 250 feet.</p>
             <p><span className="font-medium">Note:</span> Wire weights are approximate and may vary by manufacturer.</p>
           </div>
         </CardContent>
@@ -281,7 +281,7 @@ export function WireTypeManager() {
                 name="ratio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm">Weight per 100 feet</FormLabel>
+                    <FormLabel className="text-sm">Weight per 250 feet</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input 
@@ -292,12 +292,12 @@ export function WireTypeManager() {
                           {...field} 
                         />
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                          <span className="text-gray-500 text-sm">lbs/100ft</span>
+                          <span className="text-gray-500 text-sm">lbs/250ft</span>
                         </div>
                       </div>
                     </FormControl>
                     <FormDescription className="text-xs sm:text-sm">
-                      Enter the weight of 100 feet of this wire type in pounds.
+                      Enter the weight of 250 feet of this wire type in pounds.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -60,16 +60,16 @@ export class DatabaseStorage implements IStorage {
     // Only seed if there are no wire types yet
     if (existingWireTypes.length === 0) {
       const defaultWireTypes: InsertWireType[] = [
-        { name: "10/2 NM-B (Romex)", ratio: "13.0", isDefault: 1 },
-        { name: "12/2 NM-B (Romex)", ratio: "8.46", isDefault: 1 },
-        { name: "12/3 NM-B (Romex)", ratio: "11.2", isDefault: 1 },
-        { name: "14/2 NM-B (Romex)", ratio: "5.84", isDefault: 1 },
-        { name: "14/3 NM-B (Romex)", ratio: "7.7", isDefault: 1 },
-        { name: "12/2 MC", ratio: "10.76", isDefault: 1 },
-        { name: "10/2 UF-B", ratio: "14.0", isDefault: 1 },
-        { name: "12/2 UF-B", ratio: "9.5", isDefault: 1 },
-        { name: "14/2 UF-B", ratio: "7.275", isDefault: 1 },
-        { name: "6/3 SER", ratio: "18.0", isDefault: 1 }
+        { name: "10/2 NM-B (Romex)", ratio: "32.5", isDefault: 1 },
+        { name: "12/2 NM-B (Romex)", ratio: "21.15", isDefault: 1 },
+        { name: "12/3 NM-B (Romex)", ratio: "28.0", isDefault: 1 },
+        { name: "14/2 NM-B (Romex)", ratio: "14.6", isDefault: 1 },
+        { name: "14/3 NM-B (Romex)", ratio: "19.25", isDefault: 1 },
+        { name: "12/2 MC", ratio: "26.9", isDefault: 1 },
+        { name: "10/2 UF-B", ratio: "35.0", isDefault: 1 },
+        { name: "12/2 UF-B", ratio: "23.75", isDefault: 1 },
+        { name: "14/2 UF-B", ratio: "18.19", isDefault: 1 },
+        { name: "6/3 SER", ratio: "45.0", isDefault: 1 }
       ];
 
       for (const wireType of defaultWireTypes) {
