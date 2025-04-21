@@ -206,7 +206,7 @@ export function Calculator() {
                   </div>
 
                   <p className="mt-2 text-sm text-blue-600">
-                    Based on <span className="font-medium">{result.wireType.ratio}</span> lbs per 100 feet
+                    Based on <span className="font-medium">{result.wireType.ratio}</span> lbs per 250 feet
                   </p>
                 </div>
               </div>
