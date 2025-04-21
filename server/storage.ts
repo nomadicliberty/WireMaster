@@ -56,20 +56,35 @@ export class DatabaseStorage implements IStorage {
   async seedDefaultWireTypes(): Promise<void> {
     // Check if there are any wire types
     const existingWireTypes = await this.getWireTypes();
-    
+
     // Only seed if there are no wire types yet
     if (existingWireTypes.length === 0) {
       const defaultWireTypes: InsertWireType[] = [
-        { name: "10/2 NM-B (Romex)", ratio: "32.5", isDefault: 1 },
-        { name: "12/2 NM-B (Romex)", ratio: "21.15", isDefault: 1 },
-        { name: "12/3 NM-B (Romex)", ratio: "28.0", isDefault: 1 },
-        { name: "14/2 NM-B (Romex)", ratio: "14.6", isDefault: 1 },
-        { name: "14/3 NM-B (Romex)", ratio: "19.25", isDefault: 1 },
-        { name: "12/2 MC", ratio: "26.9", isDefault: 1 },
-        { name: "10/2 UF-B", ratio: "35.0", isDefault: 1 },
+        // Romex types
+        { name: "8/3 NM-B (Romex)", ratio: "63.20", isDefault: 1 },
+        { name: "6/3 NM-B (Romex)", ratio: "88.90", isDefault: 1 },
+        { name: "10/2 NM-B (Romex)", ratio: "31.95", isDefault: 1 },
+        { name: "10/3 NM-B (Romex)", ratio: "47.05", isDefault: 1 },
+        { name: "12/2 NM-B (Romex)", ratio: "21.30", isDefault: 1 },
+        { name: "12/3 NM-B (Romex)", ratio: "28.35", isDefault: 1 },
+        { name: "14/2 NM-B (Romex)", ratio: "15.80", isDefault: 1 },
+        { name: "14/3 NM-B (Romex)", ratio: "19.60", isDefault: 1 },
+        // MC types
+        { name: "8/2 MC", ratio: "56.66", isDefault: 1 },
+        { name: "10/2 MC", ratio: "39.75", isDefault: 1 },
+        { name: "10/3 MC", ratio: "49.60", isDefault: 1 },
+        { name: "12/2 MC", ratio: "25.30", isDefault: 1 },
+        { name: "12/3 MC", ratio: "33.35", isDefault: 1 },
+        { name: "12/4 MC", ratio: "38.20", isDefault: 1 },
+        { name: "14/2 MC", ratio: "19.10", isDefault: 1 },
+        { name: "14/3 MC", ratio: "24.70", isDefault: 1 },
+        // UF types
+        { name: "8/3 UF-B", ratio: "89.13", isDefault: 1 },
+        { name: "10/2 UF-B", ratio: "35.05", isDefault: 1 },
         { name: "12/2 UF-B", ratio: "23.75", isDefault: 1 },
-        { name: "14/2 UF-B", ratio: "18.19", isDefault: 1 },
-        { name: "6/3 SER", ratio: "45.0", isDefault: 1 }
+        { name: "14/2 UF-B", ratio: "18.20", isDefault: 1 },
+        // SER types
+        { name: "6/3 SER", ratio: "47.05", isDefault: 1 }
       ];
 
       for (const wireType of defaultWireTypes) {
