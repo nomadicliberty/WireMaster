@@ -1,6 +1,5 @@
 import { defaultWireTypes } from './defaultWireTypes';
-import type { WireType } from "@shared/schema"; // keep this if you're using the shared type
-
+import type { WireType } from "@shared/schema";
 
 // Interface for storage operations
 export interface IStorage {
@@ -8,88 +7,56 @@ export interface IStorage {
   getWireType(id: string): Promise<WireType | undefined>;
   createWireType(wireType: InsertWireType): Promise<WireType>;
   updateWireType(id: string, wireType: WireType): Promise<WireType>;
-deleteWireType(id: string): Promise<boolean>;
-
+  deleteWireType(id: string): Promise<boolean>;
   seedDefaultWireTypes(): Promise<void>;
 }
 
+// Dummy type to make this file standalone
+// Replace or import your InsertWireType from @shared/schema if needed
+export type InsertWireType = {
+  name: string;
+  ratio: number | string;
+  isDefault?: number;
+};
+
 export class DatabaseStorage implements IStorage {
+  private wireTypes: WireType[] = [...defaultWireTypes];
+
   async getWireTypes(): Promise<WireType[]> {
-    return defaultWireTypes;
+    return this.wireTypes;
   }
- 
 
   async getWireType(id: string): Promise<WireType | undefined> {
-    return defaultWireTypes.find(wt => wt.id === id);
+    return this.wireTypes.find(wt => wt.id === id);
   }
-  
 
   async createWireType(insertWireType: InsertWireType): Promise<WireType> {
     const newWireType: WireType = {
       ...insertWireType,
-      id: crypto.randomUUID(), // or `Date.now().toString()` if you want simpler IDs
+      id: crypto.randomUUID(),
+      ratio: Number(insertWireType.ratio),
       isDefault: 0
     };
-    defaultWireTypes.push(newWireType);
+    this.wireTypes.push(newWireType);
     return newWireType;
   }
-  
+
   async updateWireType(id: string, wireType: WireType): Promise<WireType> {
-    const index = defaultWireTypes.findIndex(wt => wt.id === id);
+    const index = this.wireTypes.findIndex(wt => wt.id === id);
     if (index === -1) throw new Error("Wire type not found");
-  
-    defaultWireTypes[index] = { ...defaultWireTypes[index], ...wireType };
-    return defaultWireTypes[index];
+    this.wireTypes[index] = { ...this.wireTypes[index], ...wireType };
+    return this.wireTypes[index];
   }
-  
 
   async deleteWireType(id: string): Promise<boolean> {
-    const index = defaultWireTypes.findIndex(wt => wt.id === id);
+    const index = this.wireTypes.findIndex(wt => wt.id === id);
     if (index === -1) return false;
-  
-    defaultWireTypes.splice(index, 1);
+    this.wireTypes.splice(index, 1);
     return true;
   }
-  
 
   async seedDefaultWireTypes(): Promise<void> {
-    // Check if there are any wire types
-    const existingWireTypes = await this.getWireTypes();
-
-    // Only seed if there are no wire types yet
-    if (existingWireTypes.length === 0) {
-      const defaultWireTypes: InsertWireType[] = [
-        // Romex types
-        { name: "8/3 NM-B (Romex)", ratio: "63.20", isDefault: 1 },
-        { name: "6/3 NM-B (Romex)", ratio: "88.90", isDefault: 1 },
-        { name: "10/2 NM-B (Romex)", ratio: "31.95", isDefault: 1 },
-        { name: "10/3 NM-B (Romex)", ratio: "47.05", isDefault: 1 },
-        { name: "12/2 NM-B (Romex)", ratio: "21.30", isDefault: 1 },
-        { name: "12/3 NM-B (Romex)", ratio: "28.35", isDefault: 1 },
-        { name: "14/2 NM-B (Romex)", ratio: "15.80", isDefault: 1 },
-        { name: "14/3 NM-B (Romex)", ratio: "19.60", isDefault: 1 },
-        // MC types
-        { name: "8/2 MC", ratio: "56.66", isDefault: 1 },
-        { name: "10/2 MC", ratio: "39.75", isDefault: 1 },
-        { name: "10/3 MC", ratio: "49.60", isDefault: 1 },
-        { name: "12/2 MC", ratio: "25.30", isDefault: 1 },
-        { name: "12/3 MC", ratio: "33.35", isDefault: 1 },
-        { name: "12/4 MC", ratio: "38.20", isDefault: 1 },
-        { name: "14/2 MC", ratio: "19.10", isDefault: 1 },
-        { name: "14/3 MC", ratio: "24.70", isDefault: 1 },
-        // UF types
-        { name: "8/3 UF-B", ratio: "89.13", isDefault: 1 },
-        { name: "10/2 UF-B", ratio: "35.05", isDefault: 1 },
-        { name: "12/2 UF-B", ratio: "23.75", isDefault: 1 },
-        { name: "14/2 UF-B", ratio: "18.20", isDefault: 1 },
-        // SER types
-        { name: "6/3 SER", ratio: "47.05", isDefault: 1 }
-      ];
-
-      for (const wireType of defaultWireTypes) {
-        await this.createWireType(wireType);
-      }
-    }
+    // No-op: already using static seed
   }
 }
 
