@@ -51,7 +51,8 @@ export function Calculator() {
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const wireTypeId = parseInt(selectedWireTypeId);
+    const wireTypeId = selectedWireTypeId;
+
     const weightValue = parseFloat(weight);
 
     if (isNaN(wireTypeId)) {
