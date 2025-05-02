@@ -22,9 +22,10 @@ export type WireType = typeof wireTypes.$inferSelect;
 
 // We'll also define a validation schema for calculating wire length
 export const calculateSchema = z.object({
-  wireTypeId: z.number(),
+  wireTypeId: z.string().min(1), // ✅ fix: string ID
   weight: z.number().positive(),
-  weightUnit: z.enum(["lbs", "oz"]).default("lbs"),
+  weightUnit: z.enum(["lbs", "oz"]),
 });
+
 
 export type CalculateInput = z.infer<typeof calculateSchema>;
