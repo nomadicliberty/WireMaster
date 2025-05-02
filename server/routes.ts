@@ -19,24 +19,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get a specific wire type
   app.get("/api/wire-types/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid wire type ID" });
-      }
+      const id = req.params.id; // ⬅️ no longer parsed as number
       const wireType = await storage.getWireType(id);
       if (!wireType) {
         return res.status(404).json({ message: "Wire type not found" });
       }
-
+  
       return res.status(200).json(wireType);
     } catch (error) {
       console.error("Error fetching wire type:", error);
       return res.status(500).json({ message: "Failed to fetch wire type" });
     }
   });
+  
 
   // Create a new wire type
   app.post("/api/wire-types", async (req: Request, res: Response) => {
@@ -63,10 +60,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update a wire type
   app.put("/api/wire-types/:id", async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid wire type ID" });
-      }
+      const id = req.params.id;
+
       const existingWireType = await storage.getWireType(id);
       if (!existingWireType) {
         return res.status(404).json({ message: "Wire type not found" });
