@@ -6,8 +6,7 @@ import { insertWireTypeSchema, calculateSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Seed default wire types
-  await storage.seedDefaultWireTypes();
+  //   await storage.seedDefaultWireTypes();//
 
   // Get all wire types
   app.get("/api/wire-types", async (req: Request, res: Response) => {
