@@ -55,7 +55,7 @@ export function Calculator() {
 
     const weightValue = parseFloat(weight);
 
-    if (isNaN(wireTypeId)) {
+    if (!wireTypeId) {
       toast({
         title: "Wire type required",
         description: "Please select a wire type from the dropdown.",
