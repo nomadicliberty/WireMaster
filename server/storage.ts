@@ -7,8 +7,9 @@ export interface IStorage {
   getWireTypes(): Promise<WireType[]>;
   getWireType(id: string): Promise<WireType | undefined>;
   createWireType(wireType: InsertWireType): Promise<WireType>;
-  updateWireType(id: number, wireType: WireType): Promise<WireType>;
-  deleteWireType(id: number): Promise<boolean>;
+  updateWireType(id: string, wireType: WireType): Promise<WireType>;
+deleteWireType(id: string): Promise<boolean>;
+
   seedDefaultWireTypes(): Promise<void>;
 }
 
@@ -24,30 +25,32 @@ export class DatabaseStorage implements IStorage {
   
 
   async createWireType(insertWireType: InsertWireType): Promise<WireType> {
-    const [wireType] = await db
-      .insert(wireTypes)
-      .values(insertWireType)
-      .returning();
-    return wireType;
+    const newWireType: WireType = {
+      ...insertWireType,
+      id: crypto.randomUUID(), // or `Date.now().toString()` if you want simpler IDs
+      isDefault: 0
+    };
+    defaultWireTypes.push(newWireType);
+    return newWireType;
   }
+  
+  async updateWireType(id: string, wireType: WireType): Promise<WireType> {
+    const index = defaultWireTypes.findIndex(wt => wt.id === id);
+    if (index === -1) throw new Error("Wire type not found");
+  
+    defaultWireTypes[index] = { ...defaultWireTypes[index], ...wireType };
+    return defaultWireTypes[index];
+  }
+  
 
-  async updateWireType(id: number, wireType: WireType): Promise<WireType> {
-    const { id: _, ...updateValues } = wireType;
-    const [updatedWireType] = await db
-      .update(wireTypes)
-      .set(updateValues)
-      .where(eq(wireTypes.id, id))
-      .returning();
-    return updatedWireType;
+  async deleteWireType(id: string): Promise<boolean> {
+    const index = defaultWireTypes.findIndex(wt => wt.id === id);
+    if (index === -1) return false;
+  
+    defaultWireTypes.splice(index, 1);
+    return true;
   }
-
-  async deleteWireType(id: number): Promise<boolean> {
-    const result = await db
-      .delete(wireTypes)
-      .where(eq(wireTypes.id, id))
-      .returning({ id: wireTypes.id });
-    return result.length > 0;
-  }
+  
 
   async seedDefaultWireTypes(): Promise<void> {
     // Check if there are any wire types
