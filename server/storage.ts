@@ -1,15 +1,11 @@
-import { 
-  wireTypes, 
-  type WireType, 
-  type InsertWireType
-} from "@shared/schema";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { defaultWireTypes } from './defaultWireTypes';
+import type { WireType } from "@shared/schema"; // keep this if you're using the shared type
+
 
 // Interface for storage operations
 export interface IStorage {
   getWireTypes(): Promise<WireType[]>;
-  getWireType(id: number): Promise<WireType | undefined>;
+  getWireType(id: string): Promise<WireType | undefined>;
   createWireType(wireType: InsertWireType): Promise<WireType>;
   updateWireType(id: number, wireType: WireType): Promise<WireType>;
   deleteWireType(id: number): Promise<boolean>;
@@ -18,14 +14,16 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getWireTypes(): Promise<WireType[]> {
-    // Return all wire types
+    return defaultWireTypes;
+  }
+  
     return await db.select().from(wireTypes);
   }
 
-  async getWireType(id: number): Promise<WireType | undefined> {
-    const [wireType] = await db.select().from(wireTypes).where(eq(wireTypes.id, id));
-    return wireType || undefined;
+  async getWireType(id: string): Promise<WireType | undefined> {
+    return defaultWireTypes.find(wt => wt.id === id);
   }
+  
 
   async createWireType(insertWireType: InsertWireType): Promise<WireType> {
     const [wireType] = await db
