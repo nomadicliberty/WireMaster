@@ -21,7 +21,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 
 export function Calculator() {
   const { toast } = useToast();
-  const { wireTypes, isLoading } = useWireTypes();
+  const { wireTypes } = useWireTypes();
 
   const [selectedWireTypeId, setSelectedWireTypeId] = useState<string>("");
   const [weight, setWeight] = useState<string>("");
@@ -100,39 +100,40 @@ export function Calculator() {
           <div className="mb-4">
             <Label htmlFor="wireType" className="mb-1">Wire Type</Label>
             <Select
-              value={selectedWireTypeId}
-              onValueChange={setSelectedWireTypeId}
-              disabled={isLoading}
-            >
+  value={selectedWireTypeId}
+  onValueChange={setSelectedWireTypeId}
+>
+
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select wire type..." />
               </SelectTrigger>
               <SelectContent>
-                {/* Default wire types */}
-                {wireTypes
-                  .filter(wireType => wireType.isDefault === 1)
-                  .map((wireType) => (
-                    <SelectItem key={wireType.id} value={wireType.id.toString()}>
-                      {wireType.name} - {wireType.ratio} lbs/250ft
-                    </SelectItem>
-                  ))}
+  {/* Default wire types */}
+  {wireTypes
+    .filter(wireType => wireType.isDefault === 1)
+    .map((wireType) => (
+      <SelectItem key={wireType.id} value={wireType.id.toString()}>
+        {wireType.name} - {wireType.ratio} lbs/250ft
+      </SelectItem>
+    ))}
 
-                {/* Separator with text */}
-                {wireTypes.some(w => w.isDefault === 0) && (
-                  <div className="px-2 py-1.5 -mx-1 my-1 border-t border-gray-100 text-xs text-gray-500">
-                    Custom Wire Types
-                  </div>
-                )}
+  {/* Separator for custom types */}
+  {wireTypes.some(w => w.isDefault === 0) && (
+    <div className="px-2 py-1.5 -mx-1 my-1 border-t border-gray-100 text-xs text-gray-500">
+      Custom Wire Types
+    </div>
+  )}
 
-                {/* Custom wire types */}
-                {wireTypes
-                  .filter(wireType => wireType.isDefault === 0)
-                  .map((wireType) => (
-                    <SelectItem key={wireType.id} value={wireType.id.toString()}>
-                      {wireType.name} - {wireType.ratio} lbs/250ft
-                    </SelectItem>
-                  ))}
-              </SelectContent>
+  {/* Custom wire types */}
+  {wireTypes
+    .filter(wireType => wireType.isDefault === 0)
+    .map((wireType) => (
+      <SelectItem key={wireType.id} value={wireType.id.toString()}>
+        {wireType.name} - {wireType.ratio} lbs/250ft
+      </SelectItem>
+    ))}
+</SelectContent>
+
             </Select>
           </div>
 
