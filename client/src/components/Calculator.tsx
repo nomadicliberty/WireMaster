@@ -16,6 +16,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { CalculateInput, WireType } from "@shared/schema";
 import { Calculator as CalculatorIcon, RefreshCw } from "lucide-react";
 import { useWireTypes } from "@/hooks/useWireTypes";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+
 
 export function Calculator() {
   const { toast } = useToast();
@@ -191,9 +193,30 @@ export function Calculator() {
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
+
+                <Tooltip>
+  <TooltipTrigger asChild>
+    <div className="cursor-pointer">
+      <svg
+        className="h-5 w-5 text-blue-400"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fillRule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z"
+          clipRule="evenodd"
+        />
+      </svg>
+    </div>
+  </TooltipTrigger>
+  <TooltipContent className="max-w-xs" side="right">
+    This is all the math I'm going to do for you. If you need more, you're on your own!
+  </TooltipContent>
+</Tooltip>
+
+
                 </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm text-blue-700">
