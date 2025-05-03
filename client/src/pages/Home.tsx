@@ -41,7 +41,7 @@ export default function Home() {
       <footer className="bg-gray-100 border-t border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-gray-500">
-            Wire Measurement Calculator &copy; {new Date().getFullYear()} - A tool for electricians
+            Wire Measurement Calculator &copy; {new Date().getFullYear()} - A tool for handsome solar installers & electricians
           </p>
         </div>
       </footer>
