@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useWireTypes } from "@/hooks/useWireTypes";
+import { useWireTypes } from "@/context/WireTypesContext";
 import { WireType } from "@shared/schema";
 
 const formSchema = z.object({
@@ -43,7 +43,6 @@ export function WireTypeManager() {
     },
 
   });
-  console.log("Dialog open state:", isAddDialogOpen);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const updatedList = [...wireTypes];

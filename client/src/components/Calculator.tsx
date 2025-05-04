@@ -11,13 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { CalculateInput, WireType } from "@shared/schema";
+import { WireType } from "@shared/schema";
 import { Calculator as CalculatorIcon, RefreshCw } from "lucide-react";
-import { useWireTypes } from "@/hooks/useWireTypes";
+import { useWireTypes } from "@/context/WireTypesContext";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-
 
 export function Calculator() {
   const { toast } = useToast();
@@ -33,31 +30,11 @@ export function Calculator() {
     length: number;
   } | null>(null);
 
-  const calculateMutation = useMutation({
-    mutationFn: async (data: CalculateInput) => {
-      const response = await apiRequest("POST", "/api/calculate", data);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setResult(data);
-    },
-    onError: (error) => {
-      toast({
-        title: "Calculation failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-    },
-  });
-
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const wireTypeId = selectedWireTypeId;
-
     const weightValue = parseFloat(weight);
-
-    if (!wireTypeId) {
+    if (!selectedWireTypeId) {
       toast({
         title: "Wire type required",
         description: "Please select a wire type from the dropdown.",
@@ -75,16 +52,28 @@ export function Calculator() {
       return;
     }
 
-    calculateMutation.mutate({
-      wireTypeId,
+    const wireType = wireTypes.find(w => w.id.toString() === selectedWireTypeId);
+    if (!wireType) {
+      toast({
+        title: "Calculation failed",
+        description: "Selected wire type could not be found.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const weightInLbs = weightUnit === "oz" ? weightValue / 16 : weightValue;
+    const length = (250 / wireType.ratio) * weightInLbs;
+
+    setResult({
+      wireType,
       weight: weightValue,
       weightUnit,
+      length,
     });
   };
 
-  const handleReset = () => {
-    setResult(null);
-  };
+  const handleReset = () => setResult(null);
 
   return (
     <Card className="shadow-md overflow-hidden">
@@ -100,40 +89,35 @@ export function Calculator() {
           <div className="mb-4">
             <Label htmlFor="wireType" className="mb-1">Wire Type</Label>
             <Select
-  value={selectedWireTypeId}
-  onValueChange={setSelectedWireTypeId}
->
-
+              value={selectedWireTypeId}
+              onValueChange={setSelectedWireTypeId}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select wire type..." />
               </SelectTrigger>
               <SelectContent>
-  {/* Default wire types */}
-  {wireTypes
-    .filter(wireType => wireType.isDefault === 1)
-    .map((wireType) => (
-      <SelectItem key={wireType.id} value={wireType.id.toString()}>
-        {wireType.name} - {wireType.ratio} lbs/250ft
-      </SelectItem>
-    ))}
+                {wireTypes
+                  .filter(wireType => wireType.isDefault === 1)
+                  .map(wireType => (
+                    <SelectItem key={wireType.id} value={wireType.id.toString()}>
+                      {wireType.name} - {wireType.ratio} lbs/250ft
+                    </SelectItem>
+                  ))}
 
-  {/* Separator for custom types */}
-  {wireTypes.some(w => w.isDefault === 0) && (
-    <div className="px-2 py-1.5 -mx-1 my-1 border-t border-gray-100 text-xs text-gray-500">
-      Custom Wire Types
-    </div>
-  )}
+                {wireTypes.some(w => w.isDefault === 0) && (
+                  <div className="px-2 py-1.5 -mx-1 my-1 border-t border-gray-100 text-xs text-gray-500">
+                    Custom Wire Types
+                  </div>
+                )}
 
-  {/* Custom wire types */}
-  {wireTypes
-    .filter(wireType => wireType.isDefault === 0)
-    .map((wireType) => (
-      <SelectItem key={wireType.id} value={wireType.id.toString()}>
-        {wireType.name} - {wireType.ratio} lbs/250ft
-      </SelectItem>
-    ))}
-</SelectContent>
-
+                {wireTypes
+                  .filter(wireType => wireType.isDefault === 0)
+                  .map(wireType => (
+                    <SelectItem key={wireType.id} value={wireType.id.toString()}>
+                      {wireType.name} - {wireType.ratio} lbs/250ft
+                    </SelectItem>
+                  ))}
+              </SelectContent>
             </Select>
           </div>
 
@@ -176,11 +160,7 @@ export function Calculator() {
           </div>
 
           <div className="flex justify-center">
-            <Button
-              className="w-full"
-              type="submit"
-              disabled={calculateMutation.isPending}
-            >
+            <Button className="w-full" type="submit">
               <CalculatorIcon className="h-5 w-5 mr-2" />
               Calculate Length
             </Button>
@@ -190,64 +170,52 @@ export function Calculator() {
         {result && (
           <div className="mt-6 pt-6 border-t border-gray-200">
             <h3 className="text-lg font-medium text-gray-900 mb-2">Results</h3>
-
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-
-                <Tooltip>
-  <TooltipTrigger asChild>
-    <div className="cursor-pointer">
-      <svg
-        className="h-5 w-5 text-blue-400"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fillRule="evenodd"
-          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z"
-          clipRule="evenodd"
-        />
-      </svg>
-    </div>
-  </TooltipTrigger>
-  <TooltipContent className="max-w-xs" side="right">
-    This is all the math I'm going to do for you. If you need more, you're on your own!
-  </TooltipContent>
-</Tooltip>
-
-
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="cursor-pointer">
+                        <svg
+                          className="h-5 w-5 text-blue-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs" side="right">
+                      This is all the math I'm going to do for you. If you need more, you're on your own!
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm text-blue-700">
                     For <span className="font-semibold">{result.wireType.name}</span> weighing{" "}
                     <span className="font-semibold">{result.weight}</span> {result.weightUnit}:
                   </p>
-
                   <div className="mt-2 text-2xl font-bold text-center text-blue-800">
                     <span>{result.length.toFixed(1)}</span>
                     <span className="ml-1 text-lg font-normal">feet</span>
                   </div>
-
                   <p className="mt-2 text-sm text-blue-600">
                     Based on <span className="font-medium">{result.wireType.ratio}</span> lbs per 250 feet
                     <p className="mt-1 text-sm text-blue-600">
-                    That means you have approximately <span className="font-semibold">{(250 - result.length).toFixed(1)} 
-                      feet</span> remaining from a 250' roll.
-</p>
+                      That means you have approximately{" "}
+                      <span className="font-semibold">{(250 - result.length).toFixed(1)} feet</span> remaining from a 250' roll.
+                    </p>
                   </p>
                 </div>
               </div>
             </div>
-
             <div className="mt-4 flex justify-center">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="inline-flex items-center"
-              >
+              <Button variant="outline" size="sm" onClick={handleReset} className="inline-flex items-center">
                 <RefreshCw className="h-4 w-4 mr-1.5" />
                 Reset
               </Button>
