@@ -207,8 +207,8 @@ export function Calculator() {
                   <p className="mt-2 text-sm text-blue-600">
                     Based on <span className="font-medium">{result.wireType.ratio}</span> lbs per 250 feet
                     <p className="mt-1 text-sm text-blue-600">
-                      That means you have approximately{" "}
-                      <span className="font-semibold">{(250 - result.length).toFixed(1)} feet</span> remaining from a 250' roll.
+                      That means you used approximately{" "}
+                      <span className="font-semibold">{(250 - result.length).toFixed(1)} feet</span> from a full 250' roll.
                     </p>
                   </p>
                 </div>
