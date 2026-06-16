@@ -4,3 +4,9 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gzproject.zip
+
+# Local secrets, logs, and Firebase CLI cache
+.env.local
+.env*.local
+pglite-debug.log
+.firebase/
