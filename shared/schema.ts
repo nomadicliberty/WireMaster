@@ -15,10 +15,29 @@ export const insertWireTypeSchema = z.object({
     typeof val === 'number' ? String(val) : val
   ),
   isDefault: z.number().default(0),
+  // Optional spool properties for custom wire types
+  hasSpool: z.boolean().optional().default(false),
+  spoolWeight: z.number().optional(),
+  spoolLength: z.number().optional(),
+  // Full-roll length for the "used from a full roll" message (defaults to 250ft)
+  rollLength: z.number().optional(),
 });
 
 export type InsertWireType = z.infer<typeof insertWireTypeSchema>;
-export type WireType = typeof wireTypes.$inferSelect;
+
+// Extended WireType for client use (includes optional spool data)
+export interface WireTypeWithSpool {
+  id: string;
+  name: string;
+  ratio: string;
+  isDefault: number;
+  hasSpool?: boolean;
+  spoolWeight?: number;
+  spoolLength?: number;
+  rollLength?: number;
+}
+
+export type WireType = WireTypeWithSpool;
 
 // We'll also define a validation schema for calculating wire length
 export const calculateSchema = z.object({

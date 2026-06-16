@@ -15,6 +15,7 @@ import { WireType } from "@shared/schema";
 import { Calculator as CalculatorIcon, RefreshCw } from "lucide-react";
 import { useWireTypes } from "@/context/WireTypesContext";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { validateWeight } from "@/utils/validation";
 
 export function Calculator() {
   const { toast } = useToast();
@@ -28,12 +29,14 @@ export function Calculator() {
     weight: number;
     weightUnit: string;
     length: number;
+    netWeight?: number;
+    spoolWeight?: number;
   } | null>(null);
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const weightValue = parseFloat(weight);
+    // Validate wire type selection
     if (!selectedWireTypeId) {
       toast({
         title: "Wire type required",
@@ -43,15 +46,18 @@ export function Calculator() {
       return;
     }
 
-    if (isNaN(weightValue) || weightValue <= 0 || weightValue > 999.99) {
+    // Validate weight input using secure validation
+    const weightValidation = validateWeight(weight);
+    if (!weightValidation.isValid) {
       toast({
         title: "Invalid weight",
-        description: "Please enter a number between 0.01 and 999.99 with up to 2 decimal places.",
+        description: weightValidation.error,
         variant: "destructive",
       });
       return;
     }
 
+    const weightValue = parseFloat(weight);
     const wireType = wireTypes.find(w => w.id.toString() === selectedWireTypeId);
     if (!wireType) {
       toast({
@@ -62,14 +68,45 @@ export function Calculator() {
       return;
     }
 
-    const weightInLbs = weightUnit === "oz" ? weightValue / 16 : weightValue;
-    const length = (250 / wireType.ratio) * weightInLbs;
+    // Validate wire type ratio for safety
+    const ratioValue = parseFloat(wireType.ratio);
+    if (isNaN(ratioValue) || ratioValue <= 0) {
+      toast({
+        title: "Calculation failed",
+        description: "Invalid wire type ratio data.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let weightInLbs = weightUnit === "oz" ? weightValue / 16 : weightValue;
+    let netWeight = weightInLbs;
+    let spoolWeight: number | undefined;
+    
+    // If this wire type has spool data, subtract spool weight
+    if (wireType.hasSpool && wireType.spoolWeight) {
+      spoolWeight = wireType.spoolWeight;
+      netWeight = weightInLbs - spoolWeight;
+      
+      if (netWeight <= 0) {
+        toast({
+          title: "Calculation Warning", 
+          description: `Weight (${weightInLbs.toFixed(2)} lbs) is less than or equal to spool weight (${spoolWeight} lbs). Check your measurement.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    const length = (250 / ratioValue) * netWeight;
 
     setResult({
       wireType,
       weight: weightValue,
       weightUnit,
       length,
+      netWeight: wireType.hasSpool ? netWeight : undefined,
+      spoolWeight: wireType.hasSpool ? spoolWeight : undefined,
     });
   };
 
@@ -123,6 +160,17 @@ export function Calculator() {
 
           <div className="mb-6">
             <Label htmlFor="weight" className="mb-1">Wire Weight</Label>
+            {(() => {
+              const selectedWireType = wireTypes.find(w => w.id.toString() === selectedWireTypeId);
+              if (selectedWireType?.hasSpool) {
+                return (
+                  <p className="text-xs text-blue-600 mb-2 bg-blue-50 border border-blue-200 rounded px-2 py-1">
+                    🎯 <span className="font-medium">Include spool weight:</span> Weigh the entire spool as-is (wire + spool together)
+                  </p>
+                );
+              }
+              return null;
+            })()}
             <div className="flex space-x-2">
               <div className="relative flex-1">
                 <Input
@@ -200,17 +248,40 @@ export function Calculator() {
                     For <span className="font-semibold">{result.wireType.name}</span> weighing{" "}
                     <span className="font-semibold">{result.weight}</span> {result.weightUnit}:
                   </p>
-                  <div className="mt-2 text-2xl font-bold text-center text-blue-800">
-                    <span>{result.length.toFixed(1)}</span>
+                  
+                  {/* Spool Weight Message */}
+                  {result.spoolWeight !== undefined && (
+                    <div className="mt-2 p-2 bg-blue-100 rounded text-xs text-blue-800 border border-blue-300">
+                      <div className="flex items-center gap-1">
+                        <span>🎯</span>
+                        <span className="font-medium">Spool weight accounted for:</span>
+                      </div>
+                      <div className="mt-1">
+                        Total: {result.weight} {result.weightUnit} = Wire: <span className="font-semibold">{result.netWeight?.toFixed(2)} lbs</span> + Spool: {Number(result.spoolWeight).toFixed(2)} lbs
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-3 text-2xl font-bold text-center text-blue-800">
+                    <span>{result.length.toFixed(2)}</span>
                     <span className="ml-1 text-lg font-normal">feet</span>
                   </div>
-                  <p className="mt-2 text-sm text-blue-600">
-                    Based on <span className="font-medium">{result.wireType.ratio}</span> lbs per 250 feet
-                    <p className="mt-1 text-sm text-blue-600">
-                      That means you used approximately{" "}
-                      <span className="font-semibold">{(250 - result.length).toFixed(1)} feet</span> from a full 250' roll.
-                    </p>
-                  </p>
+                  
+                  <div className="mt-2 text-sm text-blue-600 space-y-1">
+                    <p>Based on <span className="font-medium">{result.wireType.ratio}</span> lbs per 250 feet</p>
+                    
+                    {result.wireType.hasSpool && result.wireType.spoolLength ? (
+                      <p>
+                        That means you have approximately{" "}
+                        <span className="font-semibold">{(result.wireType.spoolLength - result.length).toFixed(2)} feet</span> left on the {result.wireType.spoolLength}ft spool.
+                      </p>
+                    ) : (
+                      <p>
+                        That means you used approximately{" "}
+                        <span className="font-semibold">{((result.wireType.rollLength ?? 250) - result.length).toFixed(2)} feet</span> from a full {result.wireType.rollLength ?? 250}' roll.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
