@@ -1,5 +1,6 @@
 export const defaultWireTypes = [
     { id: "8-3-nmb", name: "8/3 NM-B (Romex)", ratio: "63.2", isDefault: 1, rollLength: 125 },
+    { id: "8-2-nmb", name: "8/2 NM-B (Romex)", ratio: "49.4", isDefault: 1, rollLength: 125 },
     { id: "6-3-nmb", name: "6/3 NM-B (Romex)", ratio: "88.9", isDefault: 1, rollLength: 125 },
     { id: "10-2-nmb", name: "10/2 NM-B (Romex)", ratio: "31.95", isDefault: 1 },
     { id: "10-3-nmb", name: "10/3 NM-B (Romex)", ratio: "47.05", isDefault: 1 },
